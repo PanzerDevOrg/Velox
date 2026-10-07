@@ -1,8 +1,8 @@
 ![Velox](./docs/media/banner.png)
 
 <p align="center">
-<img src="https://img.shields.io/badge/Dropped%20items-all%20in%20one%20go-0ea5e9?style=for-the-badge" alt="Dropped items worked out all in one go">
-<img src="https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%201.21.11%20%C2%B7%2026.1%20%E2%80%93%2026.3-3c8527?style=for-the-badge" alt="Minecraft 1.21 – 1.21.11 and 26.1 – 26.3">
+<img src="https://img.shields.io/badge/Dropped%20items-all%20in%20one-0ea5e9?style=for-the-badge" alt="Dropped items worked out all in one">
+<img src="https://img.shields.io/badge/Minecraft-1.21%20--%2026.3-3c8527?style=for-the-badge" alt="Minecraft 1.21 – 1.21.11 and 26.1 – 26.3">
 <img src="https://img.shields.io/badge/NeoForge-Server%20only-e8710a?style=for-the-badge" alt="NeoForge, server only">
 </p>
 

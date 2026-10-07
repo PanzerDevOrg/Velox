@@ -1,6 +1,8 @@
 package com.panzer.mods.velox.mixin;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.panzer.mods.celeris.physics.BodyBatch;
 import com.panzer.mods.celeris.physics.BodyFlags;
 import com.panzer.mods.velox.physics.ItemPhysicsWorld;
@@ -14,6 +16,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -84,6 +87,26 @@ public abstract class ItemEntityMixin extends Entity implements VeloxBody {
             target = "Lnet/minecraft/world/entity/item/ItemEntity;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
     private boolean velox$skipDrag(ItemEntity self, Vec3 velocity) {
         return !velox$applied;
+    }
+
+    /**
+     * {@code noPhysics = !level.noCollision(this, box.deflate(1.0E-7))}: for a
+     * simulated body the answer is already known. The kernel only simulates a
+     * body whose box overlaps no solid or unmodelled block and no blocker
+     * entity (boats, shulkers: masked as unmodelled around them), so vanilla's
+     * check -- on the box before this tick's move -- finds no collision. It is
+     * also the most expensive call left in the tick: it walks every entity in
+     * the surrounding sections, which with piles of items is quadratic. The
+     * world border is the one thing the kernel does not see, so bodies near it
+     * still ask.
+     */
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/level/Level;noCollision(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Z"))
+    private boolean velox$knownNoCollision(Level level, Entity entity, AABB box, Operation<Boolean> original) {
+        if (velox$applied && level.getWorldBorder().getDistanceToBorder(getX(), getZ()) > 4.0) {
+            return true;
+        }
+        return original.call(level, entity, box);
     }
 
     /**

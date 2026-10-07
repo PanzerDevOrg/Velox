@@ -1,0 +1,96 @@
+# Velox build configuration. Merged at configuration time with
+# ../panzer-build-logic/common.stonecutter.properties.toml (panzer.settings):
+# any table declared here replaces the common table of the same name.
+
+# No [jvm.modules.*] tables: Velox only calls Celeris's plain-Java physics API.
+# The FFM/vector flags Celeris needs reach dev runs automatically through the
+# runtime-requirements file inside the Celeris jar (panzer-build-logic leaves
+# out --enable-native-access, which turns the native kernel off on Java 21).
+
+[mod]
+id = "velox"
+name = "Velox"
+group = "com.panzer.mods"
+package = "com.panzer.mods.velox"
+version = "0.1.0"
+authors = "Bichal"
+description = "Velox: dropped items worked out all together instead of one by one, moving just like in vanilla."
+side = "BOTH"
+issues = "https://github.com/PanzerDevOrg/Velox/issues"
+banner = "banner.png"
+
+# Celeris is both a compile dependency and a required runtime mod (declared in
+# neoforge.mods.toml). panzer-build-logic resolves `artifact` ({mc} = the
+# Minecraft version being built) from mavenLocal() first, then from `maven`.
+# 0.2.0 is the first Celeris with the physics engine; 0.2.1 lets players without
+# Celeris join (optional network channel).
+# (No end-of-line comments: the build's TOML readers do not strip them.)
+[depends_on.celeris]
+version = "0.2.1"
+version_range = "[0.2.1,)"
+artifact = "com.panzer.mods:celeris-{mc}"
+maven = "https://panzerdevorg.github.io/Celeris/maven"
+repo = "PanzerDevOrg/Celeris"
+
+# Releases and descriptions (panzer-build-logic/publishing). README.md is the
+# description on GitHub, Modrinth and CurseForge. No natives, so no per-system jars.
+[publish]
+modrinth_id = "ryy0AJVN"
+curseforge_id = "1729138"
+# Private repository: no source or issues link on Modrinth.
+source_url = ""
+issues_url = ""
+client_side = "optional"
+server_side = "required"
+
+# github: README links to that repository become Celeris's page on each site.
+[publish.dependencies.celeris]
+type = "required"
+modrinth = "sQphaM3I"
+curseforge = "celeris"
+github = "PanzerDevOrg/Celeris"
+
+# CI also runs `parity`: Velox against vanilla on a headless server, item by
+# item and tick by tick, for every version built (ParityHarness).
+[ci]
+gradle_tasks = "build buildAndCollect parity"
+
+# Versions: panzer-build-logic's "panzer" profile (1.21.1, 1.21.10, 1.21.11,
+# 26.1), every one checked by `parity` in CI.
+# `panzer compat` (Mods workflow, action compat): each build's release jar on
+# the other Minecraft versions in its game_versions, on a NeoForge dedicated
+# server running the same parity check.
+[compat]
+jvm_args = ["-Dvelox.parity=true"]
+report = "velox-parity.txt"
+timeout_minutes = 15
+server_properties = ["level-type=minecraft\\:flat", "generate-structures=false", "spawn-monsters=false", "online-mode=false", "max-tick-time=-1", "view-distance=4", "simulation-distance=4"]
+
+[stonecutter]
+profile = "panzer"
+vcs_version = "1.21.1"
+
+# What each build claims to support (merged with the common TOML's block for
+# that version): the version it is built for (`parity`) and the neighbours
+# where `panzer compat` ran the same parity check on that jar and it passed.
+# The 1.21.1 and 26.1 jars adapt at runtime (McCompat) to what changed up to
+# 1.21.6 and 26.3; every version below passed that check with 0 divergences.
+["1.21.1"]
+minecraft_version_range = "[1.21,1.21.7)"
+neo_version_range = "[21.0,21.7)"
+game_versions = ["1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5", "1.21.6"]
+
+["1.21.10"]
+minecraft_version_range = "[1.21.7,1.21.11)"
+neo_version_range = "[21.7,21.11)"
+game_versions = ["1.21.7", "1.21.8", "1.21.9", "1.21.10"]
+
+["1.21.11"]
+minecraft_version_range = "[1.21.11,1.21.12)"
+neo_version_range = "[21.11,21.12)"
+game_versions = ["1.21.11"]
+
+["26.1"]
+minecraft_version_range = "[26.1,26.4)"
+neo_version_range = "[26.1,26.4)"
+game_versions = ["26.1", "26.1.1", "26.1.2", "26.2", "26.3"]

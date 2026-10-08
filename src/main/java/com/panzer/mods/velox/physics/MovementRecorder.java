@@ -7,6 +7,7 @@ import net.minecraft.world.phys.Vec3;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.List;
 
 /**
  * Records a movement the way {@code Entity.move} does on the versions that
@@ -25,10 +26,15 @@ public final class MovementRecorder {
 
     private static final MethodHandle NEW_MOVEMENT;
     private static final MethodHandle ADD_MOVEMENT;
+    /** {@code Movement.from()} and {@code to()}, as (Object) -> Vec3. */
+    private static final MethodHandle FROM;
+    private static final MethodHandle TO;
 
     static {
         MethodHandle create = null;
         MethodHandle add = null;
+        MethodHandle from = null;
+        MethodHandle to = null;
         try {
             Class<?> movement = Class.forName("net.minecraft.world.entity.Entity$Movement", false,
                     Entity.class.getClassLoader());
@@ -45,14 +51,21 @@ public final class MovementRecorder {
             }
             add = lookup.findVirtual(Entity.class, "addMovementThisTick", MethodType.methodType(void.class, movement))
                     .asType(MethodType.methodType(void.class, Entity.class, Object.class));
+            MethodType accessor = MethodType.methodType(Vec3.class, Object.class);
+            from = lookup.findVirtual(movement, "from", MethodType.methodType(Vec3.class)).asType(accessor);
+            to = lookup.findVirtual(movement, "to", MethodType.methodType(Vec3.class)).asType(accessor);
         } catch (ReflectiveOperationException | RuntimeException e) {
             // Before 1.21.6 there is nothing to record into (1.21.5 keeps per-axis lists of its own).
             Velox.LOGGER.debug("Velox: entity movements not recorded ({}); block effects use the straight path", e.toString());
             create = null;
             add = null;
+            from = null;
+            to = null;
         }
         NEW_MOVEMENT = create;
         ADD_MOVEMENT = add;
+        FROM = from;
+        TO = to;
     }
 
     private MovementRecorder() {
@@ -69,5 +82,44 @@ public final class MovementRecorder {
         } catch (Throwable t) {
             throw new IllegalStateException("Velox: recording a movement failed", t);
         }
+    }
+
+    /**
+     * The box hull of a list of {@code Entity.Movement}s, as {@code out = {minX,
+     * minY, minZ, maxX, maxY, maxZ}} of their end points, for an entity whose box
+     * is {@code width} wide and {@code height} tall around the position. Every box
+     * {@code checkInsideBlocks} looks at along those movements (each axis step,
+     * each swept segment) lies inside it. False when the movements cannot be read.
+     */
+    public static boolean hull(List<?> movements, double width, double height, double[] out) {
+        if (FROM == null || movements.isEmpty()) {
+            return false;
+        }
+        double x0 = Double.POSITIVE_INFINITY, y0 = x0, z0 = x0;
+        double x1 = Double.NEGATIVE_INFINITY, y1 = x1, z1 = x1;
+        try {
+            for (int i = 0, n = movements.size(); i < n; i++) {
+                Object m = movements.get(i);
+                for (int end = 0; end < 2; end++) {
+                    Vec3 p = end == 0 ? (Vec3) FROM.invokeExact(m) : (Vec3) TO.invokeExact(m);
+                    x0 = Math.min(x0, p.x);
+                    y0 = Math.min(y0, p.y);
+                    z0 = Math.min(z0, p.z);
+                    x1 = Math.max(x1, p.x);
+                    y1 = Math.max(y1, p.y);
+                    z1 = Math.max(z1, p.z);
+                }
+            }
+        } catch (Throwable t) {
+            throw new IllegalStateException("Velox: reading a movement failed", t);
+        }
+        double half = width / 2.0;
+        out[0] = x0 - half;
+        out[1] = y0;
+        out[2] = z0 - half;
+        out[3] = x1 + half;
+        out[4] = y1 + height;
+        out[5] = z1 + half;
+        return true;
     }
 }

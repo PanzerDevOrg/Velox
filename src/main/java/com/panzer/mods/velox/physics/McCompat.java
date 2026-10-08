@@ -62,6 +62,14 @@ public final class McCompat {
      */
     public static final boolean RESTITUTION = hasMethodIn(Entity.class, "restituteMovementAfterCollisions");
 
+    /**
+     * {@code checkInsideBlocks} calls {@code onInsideBlock(state)} on every
+     * block the item is inside; {@code Entity}'s is empty. Skipping the walk
+     * over air and plain cubes needs {@code ItemEntity} not to override it.
+     */
+    public static final boolean ITEM_INSIDE_HOOK_FREE =
+            !hasMethod(net.minecraft.world.entity.item.ItemEntity.class, "onInsideBlock");
+
     /** Up to 1.21.1 {@code move} itself does the fire bookkeeping (later: applyEffectsFromBlocks). */
     public static final boolean FIRE_IN_MOVE = !EFFECTS_AFTER_MOVE;
 

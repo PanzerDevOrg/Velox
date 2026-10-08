@@ -44,4 +44,13 @@ public interface VeloxBody {
      * applying or the snapshot cannot answer (then the level does).
      */
     java.util.Optional<net.minecraft.core.BlockPos> velox$knownSupport(net.minecraft.world.phys.AABB box);
+
+    /**
+     * {@code checkInsideBlocks(movements, collector)} for an item that applied
+     * this tick's result would find nothing: every block its box passes through
+     * is air or a plain cube (no {@code entityInside}, no fluid), per the terrain
+     * snapshot the kernel used. Then neither the walk nor the collector's
+     * {@code applyAndClear} has anything to do.
+     */
+    boolean velox$insideBlocksInert(java.util.List<?> movements);
 }

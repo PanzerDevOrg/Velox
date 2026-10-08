@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.panzer.mods.celeris.physics.BodyBatch;
 import com.panzer.mods.celeris.physics.BodyFlags;
-import com.panzer.mods.celeris.physics.SupportQuery;
+import com.panzer.mods.celeris.physics.TerrainQuery;
 import com.panzer.mods.velox.physics.ItemPhysicsWorld;
 import com.panzer.mods.velox.physics.McCompat;
 import com.panzer.mods.velox.physics.MovementRecorder;
@@ -133,14 +133,30 @@ public abstract class ItemEntityMixin extends Entity implements VeloxBody {
         if (!velox$applying || world == null) {
             return null;
         }
-        int found = SupportQuery.find(world.terrain(), box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
+        int found = TerrainQuery.support(world.terrain(), box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
                 getX(), getY(), getZ(), velox$support);
-        if (found == SupportQuery.UNKNOWN) {
+        if (found == TerrainQuery.UNKNOWN) {
             return null;
         }
-        return found == SupportQuery.FOUND
+        return found == TerrainQuery.FOUND
                 ? java.util.Optional.of(new BlockPos(velox$support[0], velox$support[1], velox$support[2]))
                 : java.util.Optional.empty();
+    }
+
+    @Unique
+    private final double[] velox$hull = new double[6];
+
+    @Override
+    public boolean velox$insideBlocksInert(java.util.List<?> movements) {
+        ItemPhysicsWorld world = velox$owner;
+        if (!velox$applied || world == null || !McCompat.ITEM_INSIDE_HOOK_FREE
+                || !MovementRecorder.hull(movements, getBbWidth(), getBbHeight(), velox$hull)) {
+            return false;
+        }
+        // Vanilla walks the box deflated by 1.0E-5; 1.0E-7 still covers every block it visits.
+        double[] h = velox$hull;
+        double e = 1.0E-7;
+        return TerrainQuery.modelled(world.terrain(), h[0] + e, h[1] + e, h[2] + e, h[3] - e, h[4] - e, h[5] - e);
     }
 
     @Override

@@ -43,6 +43,7 @@ public abstract class EntityMixin {
      * scan over its blocks (a chunk lookup and fluid state per block) is
      * replaced by its known no-fluid result.
      */
+    //? if <26.1 {
     @WrapOperation(method = "baseTick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/Entity;updateInWaterStateAndDoFluidPushing()Z"))
     private boolean velox$knownNoFluid(Entity self, Operation<Boolean> original) {
@@ -51,4 +52,5 @@ public abstract class EntityMixin {
         }
         return original.call(self);
     }
+    //?}
 }

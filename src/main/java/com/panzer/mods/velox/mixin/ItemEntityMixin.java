@@ -114,11 +114,14 @@ public abstract class ItemEntityMixin extends Entity implements VeloxBody {
      * move: a simulated body's swept box holds no fluid (fluids are unmodelled
      * cells, which defer the body), so the result is known.
      */
+    // 26.1 reworked fluid tracking (EntityFluidInteraction); verified up to 1.21.x only.
+    //? if <26.1 {
     @WrapOperation(method = "tick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/item/ItemEntity;updateInWaterStateAndDoFluidPushing()Z"))
     private boolean velox$knownNoFluid(ItemEntity self, Operation<Boolean> original) {
         return velox$applied ? velox$noFluid() : original.call(self);
     }
+    //?}
 
     @Override
     public boolean velox$simulatedThisTick() {
@@ -131,9 +134,11 @@ public abstract class ItemEntityMixin extends Entity implements VeloxBody {
         // NeoForge's updateInWaterStateAndDoFluidPushing with no fluid in the box:
         // both height maps cleared, wasTouchingWater false (either branch of
         // updateInWaterStateAndDoWaterCurrentPushing), nothing else, returns false.
+        //? if <26.1 {
         this.fluidHeight.clear();
         this.forgeFluidTypeHeight.clear();
         this.wasTouchingWater = false;
+        //?}
         return false;
     }
 

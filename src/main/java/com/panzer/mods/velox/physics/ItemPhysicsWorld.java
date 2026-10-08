@@ -62,6 +62,10 @@ public final class ItemPhysicsWorld implements AutoCloseable {
     private int maskedCount;
     private final int sectionBudget;
     private long step;
+    /** This step's results may still be applied: between the step and the end of the entity ticks. */
+    private boolean resultsLive;
+    /** Furthest a body's swept box reaches from it (kernel limit: 512 cells), so the furthest a block change can matter. */
+    private static final double RESULT_REACH = 9.0;
     private boolean windowPlaced;
     private boolean closed;
 
@@ -170,6 +174,7 @@ public final class ItemPhysicsWorld implements AutoCloseable {
         int deferred;
         try {
             deferred = bridge.tick(terrain, McCompat.MOVE_RULES);
+            resultsLive = true;
         } finally {
             unmaskBlockers();
         }
@@ -186,6 +191,30 @@ public final class ItemPhysicsWorld implements AutoCloseable {
     public void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {
         if (!closed && isSectionLoaded(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4)) {
             sampler.blockChanged(pos.getX(), pos.getY(), pos.getZ(), oldState, newState, this);
+            if (resultsLive) {
+                invalidateNear(pos);
+            }
+        }
+    }
+
+    /** The level finished ticking its entities: every result of this step has been applied or dropped. */
+    public void entitiesTicked() {
+        resultsLive = false;
+    }
+
+    /**
+     * A block changed while entities tick (a falling block landing, an explosion,
+     * a mob placing a block): items near it that tick later this tick must not
+     * apply a result worked out against the old terrain. They run vanilla this
+     * tick, and the next step reads them again. Rare, so a plain entity query.
+     */
+    private void invalidateNear(BlockPos pos) {
+        double x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        AABB around = new AABB(x - RESULT_REACH, y - RESULT_REACH, z - RESULT_REACH,
+                x + 1 + RESULT_REACH, y + 1 + RESULT_REACH, z + 1 + RESULT_REACH);
+        for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, around,
+                e -> ((VeloxBody) e).velox$owner() == this)) {
+            ((VeloxBody) item).velox$onExternalWrite();
         }
     }
 

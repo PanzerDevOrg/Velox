@@ -40,4 +40,14 @@ public abstract class ServerLevelMixin implements VeloxLevel {
             world.tick();
         }
     }
+
+    @Inject(method = "tick", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/level/entity/EntityTickList;forEach(Ljava/util/function/Consumer;)V",
+            shift = At.Shift.AFTER))
+    private void velox$entitiesTicked(BooleanSupplier hasTimeLeft, CallbackInfo ci) {
+        ItemPhysicsWorld world = velox$physics;
+        if (world != null) {
+            world.entitiesTicked();
+        }
+    }
 }

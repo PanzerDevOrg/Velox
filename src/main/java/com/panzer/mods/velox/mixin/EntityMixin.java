@@ -2,6 +2,7 @@ package com.panzer.mods.velox.mixin;
 
 import com.panzer.mods.velox.physics.VeloxBody;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,17 +17,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
+    // Runs on every position and velocity write of every entity: a class test
+    // (ItemEntity is the only VeloxBody) is a constant-time check, where a
+    // failed interface instanceof walks the class's interfaces.
+
     @Inject(method = "setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V", at = @At("RETURN"))
     private void velox$velocityWritten(Vec3 velocity, CallbackInfo ci) {
-        if ((Object) this instanceof VeloxBody body) {
-            body.velox$onExternalWrite();
+        if ((Object) this instanceof ItemEntity item) {
+            ((VeloxBody) item).velox$onExternalWrite();
         }
     }
 
     @Inject(method = "setPosRaw(DDD)V", at = @At("RETURN"))
     private void velox$positionWritten(double x, double y, double z, CallbackInfo ci) {
-        if ((Object) this instanceof VeloxBody body) {
-            body.velox$onExternalWrite();
+        if ((Object) this instanceof ItemEntity item) {
+            ((VeloxBody) item).velox$onExternalWrite();
         }
     }
 }

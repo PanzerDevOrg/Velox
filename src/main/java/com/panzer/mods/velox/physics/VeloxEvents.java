@@ -132,7 +132,8 @@ public final class VeloxEvents {
             if (owner != null) {
                 owner.unregister((ItemEntity) entity);
             }
-        } else if (event.getLevel() instanceof ServerLevel level) {
+        } else if (McCompat.mayBlockItems(entity) && event.getLevel() instanceof ServerLevel level) {
+            // Only entities that may block items were ever added (arrows, orbs and mobs leave all the time).
             ItemPhysicsWorld world = ((VeloxLevel) level).velox$physics();
             if (world != null) {
                 world.removeBlocker(entity);

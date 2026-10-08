@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.panzer.mods.celeris.physics.BodyBatch;
 import com.panzer.mods.celeris.physics.BodyFlags;
+import com.panzer.mods.celeris.physics.SupportQuery;
 import com.panzer.mods.velox.physics.ItemPhysicsWorld;
 import com.panzer.mods.velox.physics.McCompat;
 import com.panzer.mods.velox.physics.MovementRecorder;
@@ -122,6 +123,25 @@ public abstract class ItemEntityMixin extends Entity implements VeloxBody {
         return velox$applied ? velox$noFluid() : original.call(self);
     }
     //?}
+
+    @Unique
+    private final int[] velox$support = new int[3];
+
+    @Override
+    public java.util.Optional<BlockPos> velox$knownSupport(AABB box) {
+        ItemPhysicsWorld world = velox$owner;
+        if (!velox$applying || world == null) {
+            return null;
+        }
+        int found = SupportQuery.find(world.terrain(), box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
+                getX(), getY(), getZ(), velox$support);
+        if (found == SupportQuery.UNKNOWN) {
+            return null;
+        }
+        return found == SupportQuery.FOUND
+                ? java.util.Optional.of(new BlockPos(velox$support[0], velox$support[1], velox$support[2]))
+                : java.util.Optional.empty();
+    }
 
     @Override
     public boolean velox$simulatedThisTick() {

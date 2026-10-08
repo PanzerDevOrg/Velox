@@ -2,6 +2,10 @@ package com.panzer.mods.velox.mixin;
 
 import com.panzer.mods.velox.physics.VeloxBody;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.Level;
+import net.minecraft.core.BlockPos;
+import java.util.Optional;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -53,4 +57,24 @@ public abstract class EntityMixin {
         return original.call(self);
     }
     //?}
+
+    /**
+     * {@code checkSupportingBlock}'s searches, made when Velox applies a result
+     * ({@code setOnGroundWithMovement}): the level's collision iterator for every
+     * grounded item, the largest cost left in its tick. The kernel ran the same
+     * search on the same snapshot; Velox answers from it, or lets the level
+     * answer when the snapshot cannot.
+     */
+    @WrapOperation(method = "checkSupportingBlock", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/level/Level;findSupportingBlock(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/Optional;"))
+    private Optional<BlockPos> velox$knownSupport(Level level, Entity entity, AABB box,
+                                                  Operation<Optional<BlockPos>> original) {
+        if ((Object) this instanceof ItemEntity item) {
+            Optional<BlockPos> known = ((VeloxBody) item).velox$knownSupport(box);
+            if (known != null) {
+                return known;
+            }
+        }
+        return original.call(level, entity, box);
+    }
 }

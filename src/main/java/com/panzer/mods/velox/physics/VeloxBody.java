@@ -36,4 +36,12 @@ public interface VeloxBody {
      * touches the box: no fluid heights, not touching water, no push.
      */
     boolean velox$noFluid();
+
+    /**
+     * {@code Level.findSupportingBlock(this, box)} while Velox applies this tick's
+     * result (the call {@code checkSupportingBlock} makes from it), answered from
+     * the terrain snapshot the kernel used; {@code null} when Velox is not
+     * applying or the snapshot cannot answer (then the level does).
+     */
+    java.util.Optional<net.minecraft.core.BlockPos> velox$knownSupport(net.minecraft.world.phys.AABB box);
 }

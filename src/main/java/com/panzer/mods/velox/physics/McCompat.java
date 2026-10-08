@@ -68,22 +68,28 @@ public final class McCompat {
     /** Up to 1.21.4 {@code move} starts with {@code wasOnFire = isOnFire()}. */
     public static final boolean WAS_ON_FIRE_IN_MOVE = !RECORDED_MOVEMENTS;
 
-    /** {@code Entity.wasOnFire}: protected on 1.21.1, private on 1.21.2 - 1.21.4 (only written there). */
-    private static volatile MethodHandle wasOnFireSetter;
+    /**
+     * {@code Entity.wasOnFire}: protected on 1.21.1, private on 1.21.2 - 1.21.4 (only
+     * written there). A static final handle in a holder class, resolved on first
+     * use: the JIT treats it as a constant and inlines the write (a handle read
+     * from a field is invoked generically, every time).
+     */
+    private static final class WasOnFire {
+        static final MethodHandle SETTER;
 
-    public static void setWasOnFire(Entity entity, boolean value) {
-        MethodHandle setter = wasOnFireSetter;
-        if (setter == null) {
+        static {
             try {
-                setter = MethodHandles.privateLookupIn(Entity.class, MethodHandles.lookup())
+                SETTER = MethodHandles.privateLookupIn(Entity.class, MethodHandles.lookup())
                         .findSetter(Entity.class, "wasOnFire", boolean.class);
             } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("Velox: no Entity.wasOnFire", e);
+                throw new ExceptionInInitializerError(e);
             }
-            wasOnFireSetter = setter;
         }
+    }
+
+    public static void setWasOnFire(Entity entity, boolean value) {
         try {
-            setter.invokeExact(entity, value);
+            WasOnFire.SETTER.invokeExact(entity, value);
         } catch (Throwable t) {
             throw new IllegalStateException("Velox: writing wasOnFire failed", t);
         }

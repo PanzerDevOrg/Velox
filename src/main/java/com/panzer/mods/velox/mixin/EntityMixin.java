@@ -4,6 +4,8 @@ import com.panzer.mods.velox.physics.VeloxBody;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -33,5 +35,20 @@ public abstract class EntityMixin {
         if ((Object) this instanceof ItemEntity item) {
             ((VeloxBody) item).velox$onExternalWrite();
         }
+    }
+
+    /**
+     * {@code baseTick}'s fluid update, on the box before this tick's move: for
+     * an item the kernel simulated this tick, the box holds no fluid, so the
+     * scan over its blocks (a chunk lookup and fluid state per block) is
+     * replaced by its known no-fluid result.
+     */
+    @WrapOperation(method = "baseTick", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/Entity;updateInWaterStateAndDoFluidPushing()Z"))
+    private boolean velox$knownNoFluid(Entity self, Operation<Boolean> original) {
+        if ((Object) this instanceof ItemEntity item && ((VeloxBody) item).velox$simulatedThisTick()) {
+            return ((VeloxBody) item).velox$noFluid();
+        }
+        return original.call(self);
     }
 }

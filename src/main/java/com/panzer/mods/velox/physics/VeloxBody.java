@@ -23,4 +23,17 @@ public interface VeloxBody {
 
     /** Position or velocity was written by code other than Velox. */
     void velox$onExternalWrite();
+
+    /**
+     * The kernel simulated this entity in the current step and nothing has
+     * invalidated the result since: its box, before and after this tick's move,
+     * holds no fluid and no unmodelled block.
+     */
+    boolean velox$simulatedThisTick();
+
+    /**
+     * What {@code updateInWaterStateAndDoFluidPushing()} does when no fluid
+     * touches the box: no fluid heights, not touching water, no push.
+     */
+    boolean velox$noFluid();
 }

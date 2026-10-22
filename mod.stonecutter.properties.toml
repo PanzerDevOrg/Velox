@@ -23,16 +23,16 @@ banner = "banner.png"
 # neoforge.mods.toml). panzer-build-logic resolves `artifact` ({mc} = the
 # Minecraft version being built) from mavenLocal() first, then from `maven`.
 # 0.2.0 is the first Celeris with the physics engine; 0.2.1 lets players without
-# Celeris join (optional network channel); 0.2.3 adds SupportQuery. Until 0.2.3 is
-# on the Maven repository, CI builds Celeris's master from source.
+# Celeris join (optional network channel); 0.2.3 adds SupportQuery; 0.3.0 (on the
+# Maven repository) is the first release that carries all of that, so CI uses it
+# as published instead of building Celeris from source.
 # (No end-of-line comments: the build's TOML readers do not strip them.)
 [depends_on.celeris]
-version = "0.2.3"
-version_range = "[0.2.3,)"
+version = "0.3.0"
+version_range = "[0.3.0,)"
 artifact = "com.panzer.mods:celeris-{mc}"
 maven = "https://panzerdevorg.github.io/Celeris/maven"
 repo = "PanzerDevOrg/Celeris"
-ci_build_from_source = true
 
 # Releases and descriptions (panzer-build-logic/publishing). README.md is the
 # description on GitHub, Modrinth and CurseForge. No natives, so no per-system jars.

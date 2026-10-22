@@ -28,6 +28,12 @@
 - ✅ **Handled by Velox:** items falling through the air or lying on full blocks such as stone, dirt, grass or ice.
 - ↩️ **Left to the normal game, while they are there:** items in water or lava, on hoppers, slabs, stairs or
   carpets, on slime, honey or soul sand, against fences or in cobwebs, or next to boats and minecarts.
+- 📈 **How much it helps:** on a test server (Minecraft 1.21.1, 4 shared CPU cores) 50,000 items lying on the ground took
+  about 70 ms per tick with Velox and 490 ms without; 500,000 took 1.1 s against 12 s, and 100,000 falling items
+  235 ms against 1.6 s. The more crowded the items, the bigger the gain (3× spread far apart, up to 19× piled up).
+  Velox does not remove everything Minecraft does per item: it keeps about 25,000 to 35,000 items inside a 50 ms tick,
+  where the normal game manages roughly 5,000 to 9,000. Methods and tables in
+  [`docs/benchmarks.md`](./docs/benchmarks.md).
 - ⚙️ **Settings** are in `config/velox-common.toml`: `enabled = false` turns Velox off (after a restart), and
   `maxItemsPerLevel` (default 32,768) is how many items per dimension it handles.
 - 📦 **Minecraft** 1.21 – 1.21.11 and 26.1 – 26.3, on NeoForge. Download the file made for your version.
@@ -73,7 +79,7 @@ is not the native one.
 | `enabled` | `true` | Turn the batch physics on or off |
 | `maxItemsPerLevel` | `32768` | Items simulated per dimension; the rest keep vanilla physics |
 | `windowSections` | `48` | Width of the terrain snapshot around the items, in 16-block sections |
-| `sectionFillsPerTick` | `64` | Chunk sections copied into the snapshot per tick |
+| `sectionFillsPerTick` | `256` | Chunk sections copied into the snapshot per tick |
 
 ## How it works
 

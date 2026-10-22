@@ -21,7 +21,7 @@ public final class VeloxConfig {
                         "it fall back to vanilla physics; the window follows the bulk of the items.")
                 .defineInRange("windowSections", 48, 8, 256);
         SECTION_FILLS_PER_TICK = b.comment("Chunk sections copied into the terrain snapshot per tick.")
-                .defineInRange("sectionFillsPerTick", 64, 1, 4096);
+                .defineInRange("sectionFillsPerTick", 256, 1, 4096);
         SPEC = b.build();
     }
 

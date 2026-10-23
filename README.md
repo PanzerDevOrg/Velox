@@ -66,9 +66,12 @@ CPU) when it can, and on the pure-Java kernel otherwise:
 | 1.21.x (Java 21) | `--enable-preview` |
 | 26.x (Java 25) | none |
 
-Leave `--enable-native-access` out: on Java 21 it switches the native kernel off, because NeoForge loads mods as
-named modules that the flag cannot cover. Velox logs which kernel it is using at startup, and what to change when it
-is not the native one.
+Leave `--enable-native-access` out. It looks like the right flag for native code, but on Java 21 it makes the JVM
+refuse native calls from every module it does not list, and NeoForge loads mods as named modules that the flag
+(`ALL-UNNAMED`) cannot cover. The native kernel is then blocked and Celeris quietly uses its pure-Java kernel instead.
+Nothing breaks and every item ends up in exactly the same place; only the native kernel's speed is lost, which in
+our tests (100,000 items) made no measurable difference to the tick.
+Velox logs which kernel it is using at startup, and what to change when it is not the native one.
 
 ## Configuration
 

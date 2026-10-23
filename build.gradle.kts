@@ -57,6 +57,9 @@ val prepareParity = tasks.register("prepareParity") {
         dir.resolve("world").deleteRecursively()
         dir.resolve("velox-parity.txt").delete()
         dir.resolve("eula.txt").writeText("eula=true\n")
+        // A small batch capacity, so that the check can throw in more items than the batch holds.
+        dir.resolve("config").mkdirs()
+        dir.resolve("config/velox-common.toml").writeText("maxItemsPerLevel = 1024\n")
         dir.resolve("server.properties").writeText(
             listOf(
                 "level-type=minecraft\\:flat",

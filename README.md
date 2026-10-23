@@ -107,7 +107,9 @@ normal gravity are simulated; subclasses from other mods are left alone.
 
 Every supported version is checked in CI by `./gradlew parity`: a headless server runs Velox and vanilla side by side
 on the same course (ice, slime, soul sand, honey, slabs, fences, cobwebs, walls placed and floors removed under
-items...) and compares every item, every tick, bit for bit. Each version is claimed only after its check passes.
+items...) and compares every item, every tick, bit for bit. It also covers stacks that merge, items that despawn or are
+removed, a chunk that unloads and loads again with its items, and more items than the batch holds. Each version is
+claimed only after its check passes.
 
 ## Building
 

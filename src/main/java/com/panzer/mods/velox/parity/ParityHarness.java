@@ -1,7 +1,10 @@
 package com.panzer.mods.velox.parity;
 
 import com.panzer.mods.velox.Velox;
+import com.panzer.mods.velox.config.VeloxConfig;
+import com.panzer.mods.velox.physics.ItemPhysicsWorld;
 import com.panzer.mods.velox.physics.VeloxBody;
+import com.panzer.mods.velox.physics.VeloxLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -37,6 +40,11 @@ import java.util.Random;
  * ids equal mod 4 (ItemEntity's resting rule uses (tickCount + id) % 4) and
  * never merge or get picked up.
  *
+ * <p>Besides the movement course, the same twin check covers the item lifecycle: stacks that merge, items that
+ * despawn or are killed (their slots are reused by the batch), a chunk that unloads and loads again with its items
+ * and a level with more items than {@code maxItemsPerLevel} (the rest must stay vanilla). Each of these must also
+ * really happen, or the check fails.
+ *
  * <p>Writes {@code velox-parity.txt} in the game directory and stops the server.
  */
 public final class ParityHarness {
@@ -45,10 +53,20 @@ public final class ParityHarness {
 
     static final int OFFSET = 256;
     private static final int OX = 528, OY = 96, OZ = 528, SIZE = 64;
-    private static final int WARMUP = 40, TICKS = 400, GIVE_UP = 1200, MAX_REPORTED = 40;
+    private static final int WARMUP = 40, TICKS = 500, GIVE_UP = 1400, MAX_REPORTED = 40;
     private static final int NEVER_PICKUP = 32767;
 
     private static final int HISTORY = 4;
+
+    /** Lifecycle waves, by test tick. */
+    private static final int DESPAWN_TICK = 210, MERGE_TICK = 220, KILL_TICK = 230, OVERFLOW_TICK = 250,
+            RELOAD_SPAWN_TICK = 260, RELOAD_BEGIN_TICK = 300, RELOAD_GIVE_UP = 440;
+    /** Despawn at 6000; started this close, twins vanish ten ticks after spawning. */
+    private static final int NEAR_DESPAWN_AGE = 5990;
+    /** Below this capacity the overflow wave runs: it needs more items than the batch holds. */
+    private static final int OVERFLOW_MAX_CAPACITY = 2048, OVERFLOW_PAIRS = 1000;
+    /** An isolated chunk (nothing forced around it) that is unloaded and loaded again; B's lies OFFSET/16 chunks away. */
+    private static final int RELOAD_CX = 35, RELOAD_CZ = 44;
 
     /** {@code history}: the twins' last {@link #HISTORY} states, A and B interleaved, by tick. */
     private record Pair(String label, ItemEntity a, ItemEntity b, Snap[] history) {
@@ -82,6 +100,19 @@ public final class ParityHarness {
     private static long compared, simulated, divergent;
     private static boolean done;
 
+    private record ReloadTwin(String label, java.util.UUID a, java.util.UUID b) {
+    }
+
+    private static final List<ReloadTwin> RELOAD = new ArrayList<>();
+    private static final java.util.Set<Pair> GONE = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    /** Reloaded pairs: tickCount was realigned by hand, so only the resting-rule phase is common. */
+    private static final java.util.Set<Pair> LOOSE_TICKS = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    private static final List<String> FAILURES = new ArrayList<>();
+    /** 0 not started, 1 waiting for the chunks to unload, 2 waiting for the items to come back, 3 done. */
+    private static int reloadState;
+    private static int reloadedPairs, peakBatch, capacity, killed, overflowSpawned;
+    private static java.lang.reflect.Field AGE;
+
     private ParityHarness() {
     }
 
@@ -94,6 +125,9 @@ public final class ParityHarness {
                     level.setChunkForced(cx, cz, true);
                 }
             }
+            for (int dx : new int[] {0, OFFSET / 16}) {
+                level.setChunkForced(RELOAD_CX + dx, RELOAD_CZ, true);
+            }
             serverTicks = 0;
         });
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> tick(e.getServer()));
@@ -101,7 +135,8 @@ public final class ParityHarness {
 
     /** Region B's items: never handed to Celeris. */
     public static boolean isControl(Entity entity) {
-        return ENABLED && CONTROLS.contains(entity);
+        // Items loaded back from the disk are new objects: B's are told apart by where they are.
+        return ENABLED && (CONTROLS.contains(entity) || entity.getX() >= OX + OFFSET - 1);
     }
 
     private static void tick(MinecraftServer server) {
@@ -140,9 +175,17 @@ public final class ParityHarness {
                 }
             }
             case 200 -> wallWave(level);
+            case DESPAWN_TICK -> despawnWave(level);
+            case MERGE_TICK -> mergeWave(level);
+            case KILL_TICK -> killWave();
+            case OVERFLOW_TICK -> overflowWave(level);
+            case RELOAD_SPAWN_TICK -> reloadWave(level);
+            case RELOAD_BEGIN_TICK -> beginReload(level);
             default -> {
             }
         }
+        reloadStep(level);
+        trackBatch(level);
         testTick++;
         if (testTick > TICKS || serverTicks > GIVE_UP) {
             finish(server);
@@ -186,6 +229,9 @@ public final class ParityHarness {
         fill(level, 56, 1, 40, 57, 6, 41, Blocks.GLASS.defaultBlockState());
         fill(level, 54, 7, 38, 60, 7, 44, Blocks.GLASS.defaultBlockState());
         fill(level, 10, 1, 40, 12, 1, 42, Blocks.COBWEB.defaultBlockState());
+        // The floor of the chunk that is unloaded and loaded again.
+        fill(level, 16 * RELOAD_CX - OX, 0, 16 * RELOAD_CZ - OZ, 16 * RELOAD_CX - OX + 15, 0, 16 * RELOAD_CZ - OZ + 15,
+                Blocks.STONE.defaultBlockState());
     }
 
     // ------------------------------------------------------------------ items
@@ -196,15 +242,20 @@ public final class ParityHarness {
 
     /** Twins with ids equal mod 4, B tagged as control, neither ever merged or picked up. */
     private static void spawn(ServerLevel level, String label, double x, double y, double z, double vx, double vy, double vz) {
-        ItemStack stack = new ItemStack(PAIRS.size() % 2 == 0 ? Items.STONE : Items.IRON_INGOT);
+        spawn(level, label, new ItemStack(PAIRS.size() % 2 == 0 ? Items.STONE : Items.IRON_INGOT), NEVER_PICKUP,
+                x, y, z, vx, vy, vz);
+    }
+
+    private static Pair spawn(ServerLevel level, String label, ItemStack stack, int pickUpDelay,
+                              double x, double y, double z, double vx, double vy, double vz) {
         ItemEntity a = new ItemEntity(level, OX + x, OY + y, OZ + z, stack.copy(), vx, vy, vz);
         ItemEntity b;
         do {
             b = new ItemEntity(level, OX + OFFSET + x, OY + y, OZ + z, stack.copy(), vx, vy, vz);
         } while (Math.floorMod(b.getId() - a.getId(), 4) != 0);
         // 32767: never picked up, and never merged (isMergable requires another delay).
-        a.setPickUpDelay(NEVER_PICKUP);
-        b.setPickUpDelay(NEVER_PICKUP);
+        a.setPickUpDelay(pickUpDelay);
+        b.setPickUpDelay(pickUpDelay);
         // Same random stream: an item pushed out of a block picks its direction at random.
         long seed = RANDOM.nextLong();
         a.getRandom().setSeed(seed);
@@ -212,7 +263,9 @@ public final class ParityHarness {
         CONTROLS.add(b);
         level.addFreshEntity(a);
         level.addFreshEntity(b);
-        PAIRS.add(new Pair(label, a, b, new Snap[2 * HISTORY]));
+        Pair pair = new Pair(label, a, b, new Snap[2 * HISTORY]);
+        PAIRS.add(pair);
+        return pair;
     }
 
     private static void firstWave(ServerLevel level) {
@@ -248,6 +301,126 @@ public final class ParityHarness {
         }
     }
 
+    // ------------------------------------------------------------------ lifecycle
+
+    private static void setAge(ItemEntity item, int age) {
+        try {
+            if (AGE == null) {
+                AGE = ItemEntity.class.getDeclaredField("age");
+                AGE.setAccessible(true);
+            }
+            AGE.setInt(item, age);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** Items that run out of time inside their own tick (thrown, resting): the batch must let go of their slots. */
+    private static void despawnWave(ServerLevel level) {
+        for (int i = 0; i < 12; i++) {
+            boolean resting = i % 2 == 0;
+            Pair p = spawn(level, "despawn#" + i, new ItemStack(Items.STONE), NEVER_PICKUP, 4.5 + 4.5 * i, 1.0, 20.5,
+                    resting ? 0.0 : between(-0.2, 0.2), resting ? 0.0 : 0.3, resting ? 0.0 : between(-0.2, 0.2));
+            setAge(p.a(), NEAR_DESPAWN_AGE);
+            setAge(p.b(), NEAR_DESPAWN_AGE);
+        }
+    }
+
+    /** Small stacks of one kind that touch: vanilla merges them (every 40 ticks when resting) and removes the others. */
+    private static void mergeWave(ServerLevel level) {
+        for (int c = 0; c < 4; c++) {
+            for (int k = 0; k < 3; k++) {
+                spawn(level, "merge#" + c + "." + k, new ItemStack(Items.COBBLESTONE, 1 + k), 0,
+                        6.5 + 10 * c + 0.15 * k, 1.0, 36.5, 0.0, 0.0, 0.0);
+            }
+        }
+    }
+
+    /** What a pick-up or a command does from outside the item's tick: remove every third thrown item. */
+    private static void killWave() {
+        for (Pair p : PAIRS) {
+            if (p.label().startsWith("thrown#") && Integer.parseInt(p.label().substring(7)) % 3 == 0
+                    && !p.a().isRemoved() && !p.b().isRemoved()) {
+                p.a().discard();
+                p.b().discard();
+                killed++;
+            }
+        }
+    }
+
+    /** More items than the batch holds: the ones past capacity must keep vanilla physics and still match. */
+    private static void overflowWave(ServerLevel level) {
+        capacity = VeloxConfig.MAX_ITEMS_PER_LEVEL.get();
+        if (capacity > OVERFLOW_MAX_CAPACITY) {
+            return;
+        }
+        for (int i = 0; i < OVERFLOW_PAIRS; i++) {
+            spawn(level, "overflow#" + i, between(2, 62), between(1.0, 3.0), between(2, 46),
+                    between(-0.2, 0.2), between(0.0, 0.2), between(-0.2, 0.2));
+            overflowSpawned++;
+        }
+    }
+
+    private static void trackBatch(ServerLevel level) {
+        ItemPhysicsWorld world = ((VeloxLevel) level).velox$physics();
+        if (world != null) {
+            peakBatch = Math.max(peakBatch, world.batch().size());
+        }
+    }
+
+    /** Eight resting twins in a chunk of their own, to be unloaded with their items and loaded again. */
+    private static void reloadWave(ServerLevel level) {
+        for (int i = 0; i < 8; i++) {
+            spawn(level, "reload#" + i, 16 * RELOAD_CX - OX + 2.5 + 1.5 * i, 1.0, 16 * RELOAD_CZ - OZ + 4.5 + (i % 3), 0.0, 0.0, 0.0);
+        }
+    }
+
+    private static void beginReload(ServerLevel level) {
+        for (Pair p : new ArrayList<>(PAIRS)) {
+            if (p.label().startsWith("reload#")) {
+                RELOAD.add(new ReloadTwin(p.label(), p.a().getUUID(), p.b().getUUID()));
+                PAIRS.remove(p);
+            }
+        }
+        for (int dx : new int[] {0, OFFSET / 16}) {
+            level.setChunkForced(RELOAD_CX + dx, RELOAD_CZ, false);
+        }
+        reloadState = 1;
+    }
+
+    private static void reloadStep(ServerLevel level) {
+        if (reloadState == 1 && !level.hasChunk(RELOAD_CX, RELOAD_CZ) && !level.hasChunk(RELOAD_CX + OFFSET / 16, RELOAD_CZ)) {
+            for (int dx : new int[] {0, OFFSET / 16}) {
+                level.setChunkForced(RELOAD_CX + dx, RELOAD_CZ, true);
+            }
+            reloadState = 2;
+        } else if (reloadState == 2) {
+            List<Pair> back = new ArrayList<>();
+            for (ReloadTwin t : RELOAD) {
+                if (level.getEntity(t.a()) instanceof ItemEntity a && level.getEntity(t.b()) instanceof ItemEntity b) {
+                    back.add(new Pair(t.label(), a, b, new Snap[2 * HISTORY]));
+                }
+            }
+            if (back.size() == RELOAD.size()) {
+                for (Pair p : back) {
+                    // The two chunks may start ticking a tick apart: line up the resting-rule phase
+                    // ((tickCount + id) % 4) so that they follow the same rule.
+                    ItemEntity a = p.a(), b = p.b();
+                    int skew = Math.floorMod((a.tickCount + a.getId()) - (b.tickCount + b.getId()), 4);
+                    b.tickCount += skew;
+                    LOOSE_TICKS.add(p);
+                    PAIRS.add(p);
+                }
+                reloadedPairs = back.size();
+                reloadState = 3;
+            }
+        }
+        if (reloadState != 3 && reloadState != 0 && testTick >= RELOAD_GIVE_UP) {
+            FAILURES.add("the chunk with the reload twins did not " + (reloadState == 1 ? "unload" : "load back with its items"));
+            reloadState = 3;
+        }
+    }
+
     // ------------------------------------------------------------------ check
 
     private static void compare(int tick) {
@@ -256,6 +429,8 @@ public final class ParityHarness {
             if (a.isRemoved() || b.isRemoved()) {
                 if (a.isRemoved() != b.isRemoved()) {
                     diverged(tick, p, "removed " + a.isRemoved() + " vs " + b.isRemoved());
+                } else {
+                    GONE.add(p);
                 }
                 continue;
             }
@@ -263,7 +438,7 @@ public final class ParityHarness {
             if (((VeloxBody) a).velox$appliedThisTick()) {
                 simulated++;
             }
-            String diff = difference(a, b);
+            String diff = difference(a, b, !LOOSE_TICKS.contains(p));
             if (diff != null) {
                 diverged(tick, p, diff);
             }
@@ -275,7 +450,7 @@ public final class ParityHarness {
         }
     }
 
-    private static String difference(ItemEntity a, ItemEntity b) {
+    private static String difference(ItemEntity a, ItemEntity b, boolean tickCount) {
         StringBuilder out = new StringBuilder();
         same(out, "x", a.getX() + OFFSET, b.getX());
         same(out, "y", a.getY(), b.getY());
@@ -288,7 +463,10 @@ public final class ParityHarness {
         same(out, "horizontalCollision", a.horizontalCollision, b.horizontalCollision);
         same(out, "verticalCollision", a.verticalCollision, b.verticalCollision);
         same(out, "fireTicks", a.getRemainingFireTicks(), b.getRemainingFireTicks());
-        same(out, "tickCount", a.tickCount, b.tickCount);
+        if (tickCount) {
+            same(out, "tickCount", a.tickCount, b.tickCount);
+        }
+        same(out, "count", a.getItem().getCount(), b.getItem().getCount());
         return out.isEmpty() ? null : out.toString();
     }
 
@@ -364,12 +542,43 @@ public final class ParityHarness {
         return s.startsWith("Block{") ? s.substring(6, s.length() - 1) : s;
     }
 
+    private static long gone(String prefix) {
+        return GONE.stream().filter(p -> p.label().startsWith(prefix)).count();
+    }
+
+    /** What each lifecycle wave did; a wave that did not happen is a failure, since it would prove nothing. */
+    private static List<String> lifecycle() {
+        long despawned = gone("despawn#"), merged = gone("merge#"), killedGone = gone("thrown#");
+        if (despawned != 12) {
+            FAILURES.add("only " + despawned + " of 12 items that were due to despawn did");
+        }
+        if (merged < 4) {
+            FAILURES.add("only " + merged + " stacks merged away (at least one per cluster of four was expected)");
+        }
+        if (killed == 0 || killedGone < killed) {
+            FAILURES.add("removed " + killed + " thrown items but " + killedGone + " pairs ended up gone");
+        }
+        if (reloadedPairs != 8) {
+            FAILURES.add(reloadedPairs + " of 8 pairs came back after the chunk unloaded");
+        }
+        if (overflowSpawned > 0 && peakBatch != capacity) {
+            FAILURES.add("the batch held at most " + peakBatch + " items although " + capacity + " fit and more were thrown in");
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add("lifecycle: despawned " + despawned + ", merged away " + merged + ", removed from outside " + killedGone
+                + ", reloaded with their chunk " + reloadedPairs + ", batch peak " + peakBatch + " of " + VeloxConfig.MAX_ITEMS_PER_LEVEL.get()
+                + (overflowSpawned > 0 ? " (" + overflowSpawned + " extra pairs thrown in to pass it)"
+                        : " (capacity above " + OVERFLOW_MAX_CAPACITY + ": overflow not exercised)"));
+        return lines;
+    }
+
     private static void finish(MinecraftServer server) {
         done = true;
         boolean finished = testTick > TICKS;
         double share = compared == 0 ? 0.0 : (double) simulated / compared;
         // Most item-ticks must really go through Celeris, or the comparison proves nothing.
-        boolean pass = finished && divergent == 0 && share >= 0.25;
+        List<String> lifecycle = lifecycle();
+        boolean pass = finished && divergent == 0 && share >= 0.25 && FAILURES.isEmpty();
         List<String> lines = new ArrayList<>();
         lines.add("velox parity " + server.getServerVersion() + ": " + (pass ? "PASS" : "FAIL"));
         lines.add("pairs " + PAIRS.size() + ", ticks " + Math.max(0, testTick - 1) + (finished ? "" : " (gave up: the course never started ticking)"));
@@ -377,6 +586,8 @@ public final class ParityHarness {
                 + String.format(" (%.1f%%, at least 25%% required)", 100 * share));
         lines.add("divergent item-ticks " + divergent + ", pairs " + DIVERGED.size()
                 + " (first in a Celeris tick: " + firstInCeleris + ", in a vanilla tick: " + firstInVanilla + ")");
+        lines.addAll(lifecycle);
+        FAILURES.forEach(f -> lines.add("  FAILED: " + f));
         DIVERGENCES.forEach(d -> lines.add("  " + d));
         lines.forEach(Velox.LOGGER::info);
         try {

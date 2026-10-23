@@ -127,9 +127,14 @@ cd Velox && ./gradlew buildAndCollect
 This README is also the description on Modrinth and CurseForge (everything outside `publish:off` blocks). Add
 `docs/changelogs/<version>.md`, set `version` under `[mod]`, then tag `v<version>`. CI publishes through
 panzer-build-logic's shared publisher; every other push uploads a `release-preview` artifact with the pages and files
-as they would be published. Modrinth and CurseForge also need `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` as secrets of
-this repository (a private repository does not get the organization's); without them a release goes to GitHub only,
-and running the CI on the tag later (dry run off, `targets` = the site) finishes it.
+as they would be published. Every release on GitHub carries each jar with its `-sources.jar` (the AGPL source for
+that file) and `SHA256SUMS.txt`.
+
+While Velox is not public on Modrinth and CurseForge, `modrinth_id` and `curseforge_id` are commented out under
+`[publish]` in `mod.stonecutter.properties.toml`: the publisher skips a site without a project id, so a tag publishes
+only to GitHub and needs no tokens. To publish there too, uncomment both ids, set `MODRINTH_TOKEN` and
+`CURSEFORGE_TOKEN` as secrets of this repository (a private repository does not get the organization's), and run the
+CI on the tag (dry run off, `targets` = the site).
 
 <!-- panzer:license -->
 ## License

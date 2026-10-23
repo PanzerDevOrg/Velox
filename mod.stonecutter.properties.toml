@@ -37,8 +37,10 @@ repo = "PanzerDevOrg/Celeris"
 # Releases and descriptions (panzer-build-logic/publishing). README.md is the
 # description on GitHub, Modrinth and CurseForge. No natives, so no per-system jars.
 [publish]
-modrinth_id = "ryy0AJVN"
-curseforge_id = "1729138"
+# Not public on Modrinth and CurseForge yet: without a project id the publisher skips the site, so a tag
+# publishes to GitHub only (jars, sources jars, checksums, changelog) and needs no tokens. Uncomment to publish there.
+# modrinth_id = "ryy0AJVN"
+# curseforge_id = "1729138"
 # Private repository: no source or issues link on Modrinth.
 source_url = ""
 issues_url = ""

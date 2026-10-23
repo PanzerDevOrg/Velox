@@ -14,10 +14,15 @@ How long a server tick takes with lots of dropped items, with Velox and without 
   path. It is not a build of Minecraft with no Velox in it at all.
 - N cobblestone stacks of 64 (never merged, never picked up, never despawn) are spawned at random places in a square
   area. **Resting:** on the ground, 200 warm-up ticks (fewer for 250,000 items and up, where one tick takes seconds),
-  then the mean of 300 ticks (100 ticks at 250,000; 40 at 500,000 with Velox and 30 without; 20 at 1,000,000 with Velox and 10 without).
+  then the mean of 300 ticks (100 ticks at 250,000; 40 at 500,000 with Velox and 30 without; 20 at 1,000,000 with
+  Velox and 10 without).
   **Falling:** dropped from y = 300 and measured for the 60 ticks after the throw. **Ice:** the floor is packed ice
   and the items are thrown sideways. **Mergeable:** 50,000 single items of 1,000 different kinds, which vanilla
   checks for merge partners but never merges.
+- **Settings used for Velox:** `maxItemsPerLevel = 1048576` (the default, 32,768, would leave the rest of a
+  100,000-item run on vanilla physics) and `windowSections = 96` (the default, 48, covers 768 blocks and some of the
+  areas here are larger). `sectionFillsPerTick` was 64 for every row except the last two falling rows; it is 256 by
+  default now. Resting rows were at 100 % applied either way.
 - Density is items per block of floor. Minecraft's own work per item grows with how many other items are close to
   it, so the same number of items costs very different amounts spread out or piled up. Both are shown.
 - The baseline with one item and no Velox: 1.2 ms (160 × 160 blocks), 2.2 ms (448 × 448), 8.2 ms (1008 × 1008) and
@@ -29,6 +34,10 @@ How long a server tick takes with lots of dropped items, with Velox and without 
   result) was checked at the end of the later runs: 100 % for every resting run.
 
 ## Results (ms per tick, lower is better; 50 ms is the 20 TPS budget)
+
+![Tick time with items resting on the ground](./media/benchmarks/resting.png)
+![Resting items by density](./media/benchmarks/density.png)
+![Falling, sliding and mergeable items](./media/benchmarks/situations.png)
 
 | Case | Items | Area (density) | Vanilla | Velox | Speed-up |
 |---|---|---|---|---|---|

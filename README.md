@@ -50,12 +50,6 @@
 
 <!-- publish:off -->
 
-## 🆕 Versions
-
-- **0.1.0:** first release. Items fall, slide and land in one batch instead of one by one, identical to the normal game. Needs Celeris 0.3.1 or newer, whose native kernel loads over JNI without launch flags.
-
-Full notes for every version: [changelogs](https://github.com/PanzerDevOrg/Velox/tree/master/docs/changelogs).
-
 ## Files per version
 
 | Minecraft | File |
@@ -137,7 +131,7 @@ cd Velox && ./gradlew buildAndCollect
 ## Releasing
 
 This README is also the description on Modrinth and CurseForge (everything outside `publish:off` blocks). Add
-`docs/changelogs/<version>.md` and a line for the version under "Versions" in this README, set `version` under `[mod]`, then tag `v<version>`. CI publishes through
+`docs/changelogs/<version>.md`, set `version` under `[mod]`, then tag `v<version>`. CI publishes through
 panzer-build-logic's shared publisher; every other push uploads a `release-preview` artifact with the pages and files
 as they would be published. Every release on GitHub carries each jar with its `-sources.jar` (the AGPL source for
 that file) and `SHA256SUMS.txt`.

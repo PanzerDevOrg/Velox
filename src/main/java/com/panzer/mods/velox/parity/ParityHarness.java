@@ -108,6 +108,14 @@ public final class ParityHarness {
     /** Reloaded pairs: tickCount was realigned by hand, so only the resting-rule phase is common. */
     private static final java.util.Set<Pair> LOOSE_TICKS = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     private static final List<String> FAILURES = new ArrayList<>();
+    /**
+     * Reloaded pairs waiting to be compared. The two chunks come back in the same tick, but which of them
+     * ticks first is up to the server, so for a tick or two the twins can be one gravity step apart; they
+     * are compared once both have run a full resting-rule cycle.
+     */
+    private static final List<Pair> SETTLING = new ArrayList<>();
+    private static int settleSince;
+    private static final int RELOAD_SETTLE_TICKS = 4;
     /** 0 not started, 1 waiting for the chunks to unload, 2 waiting for the items to come back, 3 done. */
     private static int reloadState;
     private static int reloadedPairs, peakBatch, capacity, killed, overflowSpawned;
@@ -409,11 +417,16 @@ public final class ParityHarness {
                     int skew = Math.floorMod((a.tickCount + a.getId()) - (b.tickCount + b.getId()), 4);
                     b.tickCount += skew;
                     LOOSE_TICKS.add(p);
-                    PAIRS.add(p);
+                    SETTLING.add(p);
                 }
+                settleSince = testTick;
                 reloadedPairs = back.size();
                 reloadState = 3;
             }
+        }
+        if (reloadState == 3 && !SETTLING.isEmpty() && testTick >= settleSince + RELOAD_SETTLE_TICKS) {
+            PAIRS.addAll(SETTLING);
+            SETTLING.clear();
         }
         if (reloadState != 3 && reloadState != 0 && testTick >= RELOAD_GIVE_UP) {
             FAILURES.add("the chunk with the reload twins did not " + (reloadState == 1 ? "unload" : "load back with its items"));

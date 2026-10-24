@@ -28,8 +28,8 @@ banner = "banner.png"
 # as published instead of building Celeris from source.
 # (No end-of-line comments: the build's TOML readers do not strip them.)
 [depends_on.celeris]
-version = "0.3.1"
-version_range = "[0.3.1,)"
+version = "0.3.0"
+version_range = "[0.3.0,)"
 artifact = "com.panzer.mods:celeris-{mc}"
 maven = "https://panzerdevorg.github.io/Celeris/maven"
 repo = "PanzerDevOrg/Celeris"

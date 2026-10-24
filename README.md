@@ -136,11 +136,9 @@ panzer-build-logic's shared publisher; every other push uploads a `release-previ
 as they would be published. Every release on GitHub carries each jar with its `-sources.jar` (the AGPL source for
 that file) and `SHA256SUMS.txt`.
 
-While Velox is not public on Modrinth and CurseForge, `modrinth_id` and `curseforge_id` are commented out under
-`[publish]` in `mod.stonecutter.properties.toml`: the publisher skips a site without a project id, so a tag publishes
-only to GitHub and needs no tokens. To publish there too, uncomment both ids, set `MODRINTH_TOKEN` and
-`CURSEFORGE_TOKEN` as secrets of this repository (a private repository does not get the organization's), and run the
-CI on the tag (dry run off, `targets` = the site).
+`modrinth_id` and `curseforge_id` under `[publish]` in `mod.stonecutter.properties.toml` are Velox's project ids: a tag
+publishes to GitHub, Modrinth and CurseForge, with `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` as secrets (the same ones the
+other mods use). Comment an id out to skip that site; on a manual CI run on the tag (dry run off), `targets` picks the sites.
 
 <!-- panzer:license -->
 ## License

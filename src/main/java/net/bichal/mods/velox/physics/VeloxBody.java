@@ -1,4 +1,4 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
 /**
  * Per-entity state Velox keeps on {@code ItemEntity} (added by

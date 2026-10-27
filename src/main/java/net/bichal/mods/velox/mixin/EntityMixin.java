@@ -1,6 +1,6 @@
-package com.panzer.mods.velox.mixin;
+package net.bichal.mods.velox.mixin;
 
-import com.panzer.mods.velox.physics.VeloxBody;
+import net.bichal.mods.velox.physics.VeloxBody;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.Level;

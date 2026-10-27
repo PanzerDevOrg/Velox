@@ -1,15 +1,15 @@
-package com.panzer.mods.velox.mixin;
+package net.bichal.mods.velox.mixin;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.panzer.mods.celeris.physics.BodyBatch;
-import com.panzer.mods.celeris.physics.BodyFlags;
-import com.panzer.mods.celeris.physics.TerrainQuery;
-import com.panzer.mods.velox.physics.ItemPhysicsWorld;
-import com.panzer.mods.velox.physics.McCompat;
-import com.panzer.mods.velox.physics.MovementRecorder;
-import com.panzer.mods.velox.physics.VeloxBody;
+import net.bichal.mods.celeris.physics.BodyBatch;
+import net.bichal.mods.celeris.physics.BodyFlags;
+import net.bichal.mods.celeris.physics.TerrainQuery;
+import net.bichal.mods.velox.physics.ItemPhysicsWorld;
+import net.bichal.mods.velox.physics.McCompat;
+import net.bichal.mods.velox.physics.MovementRecorder;
+import net.bichal.mods.velox.physics.VeloxBody;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;

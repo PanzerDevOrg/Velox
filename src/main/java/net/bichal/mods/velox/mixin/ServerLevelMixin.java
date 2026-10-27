@@ -1,7 +1,7 @@
-package com.panzer.mods.velox.mixin;
+package net.bichal.mods.velox.mixin;
 
-import com.panzer.mods.velox.physics.ItemPhysicsWorld;
-import com.panzer.mods.velox.physics.VeloxLevel;
+import net.bichal.mods.velox.physics.ItemPhysicsWorld;
+import net.bichal.mods.velox.physics.VeloxLevel;
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

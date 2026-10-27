@@ -1,13 +1,13 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
-import com.panzer.mods.celeris.physics.BodyBatch;
-import com.panzer.mods.celeris.physics.CelerisPhysics;
-import com.panzer.mods.celeris.physics.CellClass;
-import com.panzer.mods.celeris.physics.EntityBodyBridge;
-import com.panzer.mods.celeris.physics.PhysicsMode;
-import com.panzer.mods.celeris.physics.TerrainView;
-import com.panzer.mods.velox.Velox;
-import com.panzer.mods.velox.config.VeloxConfig;
+import net.bichal.mods.celeris.physics.BodyBatch;
+import net.bichal.mods.celeris.physics.CelerisPhysics;
+import net.bichal.mods.celeris.physics.CellClass;
+import net.bichal.mods.celeris.physics.EntityBodyBridge;
+import net.bichal.mods.celeris.physics.PhysicsMode;
+import net.bichal.mods.celeris.physics.TerrainView;
+import net.bichal.mods.velox.Velox;
+import net.bichal.mods.velox.config.VeloxConfig;
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;

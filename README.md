@@ -20,7 +20,7 @@
 - 🔬 **Checked on every version:** each supported Minecraft version is tested tick by tick against vanilla, and every
   item has to end up in exactly the same spot.
 
-> **You also need [Celeris](https://github.com/PanzerDevOrg/Celeris).** Put both in the server's `mods` folder
+> **You also need [Celeris](https://github.com/bichal/Celeris).** Put both in the server's `mods` folder
 > (or in your own, for singleplayer).
 
 ## 💡 Good to know
@@ -39,7 +39,7 @@
 - 📦 **Minecraft** 1.21 – 1.21.11 and 26.1 – 26.3, on NeoForge. Download the file made for your version.
 
 <p align="center">
-<a href="https://github.com/PanzerDevOrg/Celeris"><img src="https://img.shields.io/badge/Needs-Celeris-7c3aed?style=for-the-badge" alt="Requires Celeris"></a>
+<a href="https://github.com/bichal/Celeris"><img src="https://img.shields.io/badge/Needs-Celeris-7c3aed?style=for-the-badge" alt="Requires Celeris"></a>
 </p>
 
 ## 📊 Benchmarks
@@ -119,12 +119,12 @@ claimed only after its check passes.
 
 ## Building
 
-Clone [PanzerBuildLogic](https://github.com/PanzerDevOrg/PanzerBuildLogic) next to Velox as `panzer-build-logic`.
+Clone [BichalBuildLogic](https://github.com/bichal/BichalBuildLogic) next to Velox as `bichal-build-logic`.
 Velox resolves Celeris from `mavenLocal()` first (to try an unreleased Celeris, `./gradlew publishToMavenLocal` in
 it), then from Celeris's GitHub Pages Maven repository:
 
 ```bash
-git clone https://github.com/PanzerDevOrg/PanzerBuildLogic.git panzer-build-logic
+git clone https://github.com/bichal/BichalBuildLogic.git bichal-build-logic
 cd Velox && ./gradlew buildAndCollect
 ```
 
@@ -132,7 +132,7 @@ cd Velox && ./gradlew buildAndCollect
 
 This README is also the description on Modrinth and CurseForge (everything outside `publish:off` blocks). Add
 `docs/changelogs/<version>.md`, set `version` under `[mod]`, then tag `v<version>`. CI publishes through
-panzer-build-logic's shared publisher; every other push uploads a `release-preview` artifact with the pages and files
+bichal-build-logic's shared publisher; every other push uploads a `release-preview` artifact with the pages and files
 as they would be published. Every release on GitHub carries each jar with its `-sources.jar` (the AGPL source for
 that file) and `SHA256SUMS.txt`.
 
@@ -140,7 +140,7 @@ that file) and `SHA256SUMS.txt`.
 publishes to GitHub, Modrinth and CurseForge, with `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` as secrets (the same ones the
 other mods use). Comment an id out to skip that site; on a manual CI run on the tag (dry run off), `targets` picks the sites.
 
-<!-- panzer:license -->
+<!-- bichal:license -->
 ## License
 
 | Content | License |
@@ -150,15 +150,15 @@ other mods use). Comment an id out to skip that site; on a manual CI run on the 
 
 **Source code:** you may study, modify and redistribute it under the AGPL; if you run a modified version as a network service, its source must be available to that service's users.
 
-**Artwork:** credit Panzer, no commercial use without permission, and share derivatives under the same license.
+**Artwork:** credit Bichal, no commercial use without permission, and share derivatives under the same license.
 
 See [`LICENSE`](./LICENSE) for the full summary.
-<!-- /panzer:license -->
+<!-- /bichal:license -->
 
 <!-- publish:on -->
 
 ---
 
-<!-- panzer:footer -->
-Code: **AGPL-3.0** · Art: **CC BY-NC-SA 4.0** · Made by **Panzer**
-<!-- /panzer:footer -->
+<!-- bichal:footer -->
+Code: **AGPL-3.0** · Art: **CC BY-NC-SA 4.0** · Made by **Bichal**
+<!-- /bichal:footer -->

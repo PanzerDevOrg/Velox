@@ -1,10 +1,10 @@
-package com.panzer.mods.velox.parity;
+package net.bichal.mods.velox.parity;
 
-import com.panzer.mods.velox.Velox;
-import com.panzer.mods.velox.config.VeloxConfig;
-import com.panzer.mods.velox.physics.ItemPhysicsWorld;
-import com.panzer.mods.velox.physics.VeloxBody;
-import com.panzer.mods.velox.physics.VeloxLevel;
+import net.bichal.mods.velox.Velox;
+import net.bichal.mods.velox.config.VeloxConfig;
+import net.bichal.mods.velox.physics.ItemPhysicsWorld;
+import net.bichal.mods.velox.physics.VeloxBody;
+import net.bichal.mods.velox.physics.VeloxLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;

@@ -1,8 +1,8 @@
-package com.panzer.mods.velox;
+package net.bichal.mods.velox;
 
-import com.panzer.mods.velox.config.VeloxConfig;
-import com.panzer.mods.velox.parity.ParityHarness;
-import com.panzer.mods.velox.physics.VeloxEvents;
+import net.bichal.mods.velox.config.VeloxConfig;
+import net.bichal.mods.velox.parity.ParityHarness;
+import net.bichal.mods.velox.physics.VeloxEvents;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Velox: hands item entity physics to Celeris's batch engine. Velox itself
  * does no simulation; it only connects vanilla entities and terrain to
- * {@code com.panzer.mods.celeris.physics} and applies the results inside the
+ * {@code net.bichal.mods.celeris.physics} and applies the results inside the
  * vanilla tick, so every other part of {@code ItemEntity.tick} (pickup delay,
  * merging, age, despawn) keeps running unchanged.
  */

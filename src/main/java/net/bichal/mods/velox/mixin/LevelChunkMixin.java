@@ -1,7 +1,7 @@
-package com.panzer.mods.velox.mixin;
+package net.bichal.mods.velox.mixin;
 
-import com.panzer.mods.velox.physics.ItemPhysicsWorld;
-import com.panzer.mods.velox.physics.VeloxLevel;
+import net.bichal.mods.velox.physics.ItemPhysicsWorld;
+import net.bichal.mods.velox.physics.VeloxLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;

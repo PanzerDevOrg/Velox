@@ -1,10 +1,10 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
-import com.panzer.mods.celeris.api.CelerisFeatures;
-import com.panzer.mods.celeris.physics.CelerisPhysics;
-import com.panzer.mods.velox.Velox;
-import com.panzer.mods.velox.config.VeloxConfig;
-import com.panzer.mods.velox.parity.ParityHarness;
+import net.bichal.mods.celeris.api.CelerisFeatures;
+import net.bichal.mods.celeris.physics.CelerisPhysics;
+import net.bichal.mods.velox.Velox;
+import net.bichal.mods.velox.config.VeloxConfig;
+import net.bichal.mods.velox.parity.ParityHarness;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;

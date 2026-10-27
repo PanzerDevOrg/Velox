@@ -1,4 +1,4 @@
-package com.panzer.mods.velox.config;
+package net.bichal.mods.velox.config;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 

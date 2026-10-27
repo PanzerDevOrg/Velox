@@ -1,9 +1,9 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
-import com.panzer.mods.celeris.physics.BodyBatch;
-import com.panzer.mods.celeris.physics.BodyParams;
-import com.panzer.mods.celeris.physics.EntityBodyBridge;
-import com.panzer.mods.velox.mixin.EntityAccessor;
+import net.bichal.mods.celeris.physics.BodyBatch;
+import net.bichal.mods.celeris.physics.BodyParams;
+import net.bichal.mods.celeris.physics.EntityBodyBridge;
+import net.bichal.mods.velox.mixin.EntityAccessor;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 

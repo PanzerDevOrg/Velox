@@ -1,6 +1,6 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
-import com.panzer.mods.celeris.physics.PhysicsMode;
+import net.bichal.mods.celeris.physics.PhysicsMode;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -47,11 +47,11 @@ public final class McCompat {
      * float: vertically {@code (double) 0.98F} instead of {@code 0.98} (the 26.1
      * build also runs on 26.2+).
      */
-    public static final com.panzer.mods.celeris.physics.BodyParams ITEM_PARAMS =
+    public static final net.bichal.mods.celeris.physics.BodyParams ITEM_PARAMS =
             hasMethodIn(net.minecraft.world.entity.item.ItemEntity.class, "getAirDrag")
-                    ? new com.panzer.mods.celeris.physics.BodyParams(0.04, (double) 0.98F, (double) 0.98F, 0.98F,
-                    com.panzer.mods.celeris.physics.BodyParams.ITEM.belowOffset(), true)
-                    : com.panzer.mods.celeris.physics.BodyParams.ITEM;
+                    ? new net.bichal.mods.celeris.physics.BodyParams(0.04, (double) 0.98F, (double) 0.98F, 0.98F,
+                    net.bichal.mods.celeris.physics.BodyParams.ITEM.belowOffset(), true)
+                    : net.bichal.mods.celeris.physics.BodyParams.ITEM;
 
     /**
      * 26.2+: {@code move} ends with {@code restituteMovementAfterCollisions}, which

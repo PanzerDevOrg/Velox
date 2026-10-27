@@ -1,17 +1,17 @@
 @file:Suppress("AvoidDuplicateDependencies")
 
-import com.panzer.gradle.PanzerModExtension
+import net.bichal.gradle.BichalModExtension
 
 plugins {
-    id("panzer.neoforge-mod")
+    id("bichal.neoforge-mod")
     idea
 }
 
 // Celeris (dependency and Maven repositories), neoforge.mods.toml expansion,
-// legal files and buildAndCollect come from panzer.neoforge-mod:
+// legal files and buildAndCollect come from bichal.neoforge-mod:
 // [depends_on.celeris] and [legal] in the TOML.
 
-val modProps = extensions.getByType(PanzerModExtension::class.java).props
+val modProps = extensions.getByType(BichalModExtension::class.java).props
 val mainSourceSet = sourceSets.main.get()
 val runDir = rootProject.file("versions/${modProps.currentVersion}/run")
 val parityDir = rootProject.file("versions/${modProps.currentVersion}/run-parity")

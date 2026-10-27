@@ -1,6 +1,6 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
-import com.panzer.mods.velox.Velox;
+import net.bichal.mods.velox.Velox;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 

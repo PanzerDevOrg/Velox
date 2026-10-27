@@ -1,7 +1,7 @@
-package com.panzer.mods.velox.physics;
+package net.bichal.mods.velox.physics;
 
-import com.panzer.mods.celeris.physics.CellClass;
-import com.panzer.mods.celeris.physics.TerrainView;
+import net.bichal.mods.celeris.physics.CellClass;
+import net.bichal.mods.celeris.physics.TerrainView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.EmptyBlockGetter;

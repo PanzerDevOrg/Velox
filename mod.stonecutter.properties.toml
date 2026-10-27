@@ -1,26 +1,26 @@
 # Velox build configuration. Merged at configuration time with
-# ../panzer-build-logic/common.stonecutter.properties.toml (panzer.settings):
+# ../bichal-build-logic/common.stonecutter.properties.toml (bichal.settings):
 # any table declared here replaces the common table of the same name.
 
 # No [jvm.modules.*] tables: Velox only calls Celeris's plain-Java physics API.
 # The FFM/vector flags Celeris needs reach dev runs automatically through the
-# runtime-requirements file inside the Celeris jar (panzer-build-logic leaves
+# runtime-requirements file inside the Celeris jar (bichal-build-logic leaves
 # out --enable-native-access, which turns the native kernel off on Java 21).
 
 [mod]
 id = "velox"
 name = "Velox"
-group = "com.panzer.mods"
-package = "com.panzer.mods.velox"
+group = "net.bichal.mods"
+package = "net.bichal.mods.velox"
 version = "0.1.0"
 authors = "Bichal"
 description = "Velox: dropped items worked out all together instead of one by one, moving just like in vanilla."
 side = "BOTH"
-issues = "https://github.com/PanzerDevOrg/Velox/issues"
+issues = "https://github.com/bichal/Velox/issues"
 banner = "banner.png"
 
 # Celeris is both a compile dependency and a required runtime mod (declared in
-# neoforge.mods.toml). panzer-build-logic resolves `artifact` ({mc} = the
+# neoforge.mods.toml). bichal-build-logic resolves `artifact` ({mc} = the
 # Minecraft version being built) from mavenLocal() first, then from `maven`.
 # 0.2.0 is the first Celeris with the physics engine; 0.2.1 lets players without
 # Celeris join (optional network channel); 0.2.3 adds SupportQuery; 0.3.0 (on the
@@ -30,19 +30,19 @@ banner = "banner.png"
 [depends_on.celeris]
 version = "0.3.1"
 version_range = "[0.3.1,)"
-artifact = "com.panzer.mods:celeris-{mc}"
-maven = "https://panzerdevorg.github.io/Celeris/maven"
-repo = "PanzerDevOrg/Celeris"
+artifact = "net.bichal.mods:celeris-{mc}"
+maven = "https://bichal.github.io/Celeris/maven"
+repo = "bichal/Celeris"
 
-# Releases and descriptions (panzer-build-logic/publishing). README.md is the
+# Releases and descriptions (bichal-build-logic/publishing). README.md is the
 # description on GitHub, Modrinth and CurseForge. No natives, so no per-system jars.
 [publish]
 # Project ids for Modrinth and CurseForge: a v* tag publishes to GitHub and to both sites (jars, sources jars, checksums,
 # changelog) and needs MODRINTH_TOKEN and CURSEFORGE_TOKEN. Comment an id out to skip that site.
 modrinth_id = "ryy0AJVN"
 curseforge_id = "1729138"
-source_url = "https://github.com/PanzerDevOrg/Velox"
-issues_url = "https://github.com/PanzerDevOrg/Velox/issues"
+source_url = "https://github.com/bichal/Velox"
+issues_url = "https://github.com/bichal/Velox/issues"
 client_side = "optional"
 server_side = "required"
 
@@ -51,16 +51,16 @@ server_side = "required"
 type = "required"
 modrinth = "sQphaM3I"
 curseforge = "celeris"
-github = "PanzerDevOrg/Celeris"
+github = "bichal/Celeris"
 
 # CI also runs `parity`: Velox against vanilla on a headless server, item by
 # item and tick by tick, for every version built (ParityHarness).
 [ci]
 gradle_tasks = "build buildAndCollect parity"
 
-# Versions: panzer-build-logic's "panzer" profile (1.21.1, 1.21.10, 1.21.11,
+# Versions: bichal-build-logic's "bichal" profile (1.21.1, 1.21.10, 1.21.11,
 # 26.1), every one checked by `parity` in CI.
-# `panzer compat` (Mods workflow, action compat): each build's release jar on
+# `bichal compat` (Mods workflow, action compat): each build's release jar on
 # the other Minecraft versions in its game_versions, on a NeoForge dedicated
 # server running the same parity check.
 [compat]
@@ -70,12 +70,12 @@ timeout_minutes = 15
 server_properties = ["level-type=minecraft\\:flat", "generate-structures=false", "spawn-monsters=false", "online-mode=false", "max-tick-time=-1", "view-distance=4", "simulation-distance=4"]
 
 [stonecutter]
-profile = "panzer"
+profile = "bichal"
 vcs_version = "1.21.1"
 
 # What each build claims to support (merged with the common TOML's block for
 # that version): the version it is built for (`parity`) and the neighbours
-# where `panzer compat` ran the same parity check on that jar and it passed.
+# where `bichal compat` ran the same parity check on that jar and it passed.
 # The 1.21.1 and 26.1 jars adapt at runtime (McCompat) to what changed up to
 # 1.21.6 and 26.3; every version below passed that check with 0 divergences.
 ["1.21.1"]

@@ -1,48 +1,60 @@
 ![Velox](./docs/media/banner.png)
 
 <p align="center">
-<img src="https://img.shields.io/badge/Dropped%20items-all%20in%20one-0ea5e9?style=for-the-badge" alt="Dropped items worked out all in one">
-<img src="https://img.shields.io/badge/Minecraft-1.21%20--%2026.3-3c8527?style=for-the-badge" alt="Minecraft 1.21 – 1.21.11 and 26.1 – 26.3">
-<img src="https://img.shields.io/badge/NeoForge-Server%20only-e8710a?style=for-the-badge" alt="NeoForge, server only">
+<img src="https://img.shields.io/badge/Dropped_items-all_in_one-0ea5e9?style=for-the-badge" alt="Dropped items worked out all in one">
+<img src="https://img.shields.io/badge/Minecraft-1.21_--_26.3-3c8527?style=for-the-badge" alt="Minecraft 1.21 to 1.21.11 and 26.1 to 26.3">
+<img src="https://img.shields.io/badge/NeoForge-Server_only-e8710a?style=for-the-badge" alt="NeoForge, server only">
 </p>
 
 > **Velox is built to take work off your server when lots of dropped items are lying around.** Big explosions, mob
 > drops piling up, a storage room emptied onto the floor: instead of working out where each item goes one by one,
 > Velox does them all in one go.
 
-## ✨ Features
+<!-- publish:only modrinth -->
+**Download:** the Modrinth file list below. Pick the file for your Minecraft version.
+<!-- /publish:only -->
 
-- 🎯 **Just like vanilla:** items fall, slide and get picked up exactly as in the normal game. Farms and
+<!-- publish:only curseforge -->
+**Download:** the CurseForge file list below. Pick the file for your Minecraft version.
+<!-- /publish:only -->
+
+<!-- publish:only github -->
+**Download:** the jars are attached to each [GitHub release](https://github.com/bichal/Velox/releases).
+<!-- /publish:only -->
+
+## Features
+
+- **Just like vanilla:** items fall, slide and get picked up exactly as in the normal game. Farms and
   contraptions keep working.
-- 🖥️ **Server only:** players join with a normal game, nothing to install on their side. Also works in
+- **Server only:** players join with a normal game, nothing to install on their side. Also works in
   singleplayer.
-- 🔌 **Nothing to set up:** add it and it works.
-- 🔬 **Checked on every version:** each supported Minecraft version is tested tick by tick against vanilla, and every
+- **Nothing to set up:** add it and it works.
+- **Checked on every version:** each supported Minecraft version is tested tick by tick against vanilla, and every
   item has to end up in exactly the same spot.
 
 > **You also need [Celeris](https://github.com/bichal/Celeris).** Put both in the server's `mods` folder
 > (or in your own, for singleplayer).
 
-## 💡 Good to know
+## Good to know
 
-- ✅ **Handled by Velox:** items falling through the air or lying on full blocks such as stone, dirt, grass or ice.
-- ↩️ **Left to the normal game, while they are there:** items in water or lava, on hoppers, slabs, stairs or
+- **Handled by Velox:** items falling through the air or lying on full blocks such as stone, dirt, grass or ice.
+- **Left to the normal game, while they are there:** items in water or lava, on hoppers, slabs, stairs or
   carpets, on slime, honey or soul sand, against fences or in cobwebs, or next to boats and minecarts.
-- 📈 **How much it helps:** on a test server (Minecraft 1.21.1, 4 shared CPU cores) 50,000 items lying on the ground took
+- **How much it helps:** on a test server (Minecraft 1.21.1, 4 shared CPU cores) 50,000 items lying on the ground took
   about 70 ms per tick with Velox and 490 ms without; 500,000 took 1.1 s against 12 s, and 100,000 falling items
-  235 ms against 1.6 s. The more crowded the items, the bigger the gain (3× spread far apart, up to 19× piled up).
+  235 ms against 1.6 s. The more crowded the items, the bigger the gain (3 times spread far apart, up to 19 times piled up).
   Velox does not remove everything Minecraft does per item: it keeps about 25,000 to 35,000 items inside a 50 ms tick,
   where the normal game manages roughly 5,000 to 9,000. Counts above the default `maxItemsPerLevel` (32,768) need
   that setting raised. Methods and tables in [`docs/benchmarks.md`](./docs/benchmarks.md).
-- ⚙️ **Settings** are in `config/velox-common.toml`: `enabled = false` turns Velox off (after a restart), and
+- **Settings** are in `config/velox-common.toml`: `enabled = false` turns Velox off (after a restart), and
   `maxItemsPerLevel` (default 32,768) is how many items per dimension it handles.
-- 📦 **Minecraft** 1.21 – 1.21.11 and 26.1 – 26.3, on NeoForge. Download the file made for your version.
+- **Minecraft** 1.21 - 1.21.11 and 26.1 - 26.3, on NeoForge. Download the file made for your version.
 
 <p align="center">
 <a href="https://github.com/bichal/Celeris"><img src="https://img.shields.io/badge/Needs-Celeris-7c3aed?style=for-the-badge" alt="Requires Celeris"></a>
 </p>
 
-## 📊 Benchmarks
+## Benchmarks
 
 ![Tick time with items resting on the ground](./docs/media/benchmarks/resting.png)
 ![Resting items by density](./docs/media/benchmarks/density.png)
@@ -54,10 +66,10 @@
 
 | Minecraft | File |
 |---|---|
-| 1.21 – 1.21.6 | `velox-<version>+1.21.1.jar` |
-| 1.21.7 – 1.21.10 | `velox-<version>+1.21.10.jar` |
+| 1.21 - 1.21.6 | `velox-<version>+1.21.1.jar` |
+| 1.21.7 - 1.21.10 | `velox-<version>+1.21.10.jar` |
 | 1.21.11 | `velox-<version>+1.21.11.jar` |
-| 26.1 – 26.3 | `velox-<version>+26.1.jar` |
+| 26.1 - 26.3 | `velox-<version>+26.1.jar` |
 
 Every version listed is checked against vanilla, tick by tick: each file runs a dedicated server on every version
 it covers and must move every item exactly as vanilla does.
@@ -160,5 +172,5 @@ See [`LICENSE`](./LICENSE) for the full summary.
 ---
 
 <!-- bichal:footer -->
-Code: **AGPL-3.0** · Art: **CC BY-NC-SA 4.0** · Made by **Bichal**
+Code: **AGPL-3.0** | Art: **CC BY-NC-SA 4.0** | Made by **Bichal**
 <!-- /bichal:footer -->

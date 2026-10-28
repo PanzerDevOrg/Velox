@@ -11,15 +11,15 @@
 > Velox does them all in one go.
 
 <!-- publish:only modrinth -->
-**Download:** the Modrinth file list below. Pick the file for your Minecraft version.
+Download on [Modrinth](https://modrinth.com/mod/ryy0AJVN).
 <!-- /publish:only -->
 
 <!-- publish:only curseforge -->
-**Download:** the CurseForge file list below. Pick the file for your Minecraft version.
+Download on [CurseForge](https://www.curseforge.com/projects/1729138).
 <!-- /publish:only -->
 
 <!-- publish:only github -->
-**Download:** the jars are attached to each [GitHub release](https://github.com/bichal/Velox/releases).
+Download on [GitHub](https://github.com/bichal/Velox/releases).
 <!-- /publish:only -->
 
 ## Features

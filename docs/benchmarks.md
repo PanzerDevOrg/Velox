@@ -2,6 +2,31 @@
 
 How long a server tick takes with lots of dropped items, with Velox and without it, up to a million items.
 
+## Latest CI run (29 October 2026)
+
+**Measured:** GitHub Actions runner (4 vCPU), Minecraft 1.21.1, NeoForge 21.1.248, Java 21, `bichal/BichalBuildLogic`
+`perf-test`, run 40949675630 (Celeris 0.3.1.1, `f6a6676`) and run 40949679932 (Celeris 3c1df34, current `main`), Velox
+`main`. One run per cell. Falling is the first 80 ticks after the throw; resting is 1,200 ticks later.
+
+| Items | Phase | Normal game | Velox, Java kernel | Velox, native kernel |
+|---|---|---|---|---|
+| 2,000 | Falling | 11.46 ms | 4.36 ms | 2.59 ms |
+| 2,000 | Resting | 7.55 ms | 1.34 ms | 1.20 ms |
+| 8,000 | Falling | 97.71 ms | 11.34 ms | 9.02 ms |
+| 8,000 | Resting | 53.72 ms | 8.98 ms | 7.46 ms |
+| 20,000 | Falling | 508.50 ms | 30.28 ms | 31.38 ms |
+| 20,000 | Resting | 246.59 ms | 22.12 ms | 21.62 ms |
+
+Celeris 0.3.1.1 and 3c1df34 with the native kernel (run 13 against run 14): 2,000 falling 2.84 / 2.59 ms, 2,000 resting
+1.26 / 1.20 ms, 8,000 falling 10.82 / 9.02 ms, 8,000 resting 5.87 / 7.46 ms, 20,000 falling 26.63 / 31.38 ms, 20,000
+resting 18.96 / 21.62 ms. The normal game also moved by up to 20 % between the two runs (425.95 / 508.50 ms falling at
+20,000). These differences are within the run-to-run noise, so the Celeris update is not a measured speed-up for Velox.
+
+Death ticks (mobs killed in one tick, with and without their drops) are **not measured yet**: the first attempt timed
+ticks that did not contain the kills (0.1–0.25 ms in every case), so its numbers are not reported.
+
+## Earlier measurements: local harness, 22 October 2026
+
 **Measured:** 2026-10-22, Velox 0.1.0 with Celeris 0.3.0 (native AVX2 kernel), Minecraft 1.21.1, NeoForge, OpenJDK 21
 (`-Xmx12g`). **Machine:** 4 vCPU shared cloud VM, Linux. A shared VM is noisy: read differences under ~20 % as a tie.
 

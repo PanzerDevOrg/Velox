@@ -27,4 +27,4 @@ The jars are written to `build/libs/`, in a folder named after the version.
 
 Velox looks for Celeris in your local Maven folder first. To try a Celeris build you made yourself, run `./gradlew publishToMavenLocal` in the Celeris folder. Velox then uses that copy.
 
-Back to [Home](Home.md).
+Back to [Home](Home).

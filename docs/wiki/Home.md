@@ -13,18 +13,18 @@ Players do not need to install anything. Velox runs on the server only.
 
 **I run a server.** Read these pages in this order:
 
-1. [Requirements and files](Requirements-and-files.md): install the right file, and Celeris.
-2. [Settings](Settings.md): the options, with examples.
-3. [Troubleshooting](Troubleshooting.md): what the log says, and what to do.
-4. [Benchmarks](Benchmarks.md): measured results.
+1. [Requirements and files](Requirements-and-files): install the right file, and Celeris.
+2. [Settings](Settings): the options, with examples.
+3. [Troubleshooting](Troubleshooting): what the log says, and what to do.
+4. [Benchmarks](Benchmarks): measured results.
 
-**I want to know how it works.** Read [How it works](How-it-works.md).
+**I want to know how it works.** Read [How it works](How-it-works).
 
 **I work on Velox itself.**
 
-- [Building](Building.md): build the project from source.
-- [Releasing](Releasing.md): how a new version is published.
+- [Building](Building): build the project from source.
+- [Releasing](Releasing): how a new version is published.
 
 ## Need help?
 
-Check [Troubleshooting](Troubleshooting.md) first. If that does not help, [open an issue on GitHub](https://github.com/bichal/Velox/issues). Include the Velox lines from the log.
+Check [Troubleshooting](Troubleshooting) first. If that does not help, [open an issue on GitHub](https://github.com/bichal/Velox/issues). Include the Velox lines from the log.

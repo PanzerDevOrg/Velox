@@ -34,4 +34,4 @@ With the current Celeris release, Java 21 needs `--enable-preview` for the nativ
 
 Do not add `--enable-native-access`. On Java 21 it blocks the native kernel for NeoForge mods.
 
-To see which kernel is running, search the log for `Velox: items simulated by Celeris`. The text in the brackets tells you. See [Troubleshooting](Troubleshooting.md).
+To see which kernel is running, search the log for `Velox: items simulated by Celeris`. The text in the brackets tells you. See [Troubleshooting](Troubleshooting).

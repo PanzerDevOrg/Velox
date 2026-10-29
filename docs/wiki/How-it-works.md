@@ -37,7 +37,7 @@ The check also covers stacks that merge, items that despawn, chunks that unload 
 
 ## Limits
 
-Velox does not remove all of the work that Minecraft does for each item. The numbers and the limits are on the [Benchmarks](Benchmarks.md) page.
+Velox does not remove all of the work that Minecraft does for each item. The numbers and the limits are on the [Benchmarks](Benchmarks) page.
 
 ## For developers
 

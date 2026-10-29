@@ -56,7 +56,7 @@ Items join Velox sooner, because the area fills faster. In our tests with 100,00
 
 | What you see | Try this |
 |---|---|
-| Velox is not doing anything | Check `enabled`, then read [Troubleshooting](Troubleshooting.md). |
+| Velox is not doing anything | Check `enabled`, then read [Troubleshooting](Troubleshooting). |
 | Many items, but some stay on normal physics | Raise `maxItemsPerLevel`. |
 | Items spread over a big area use normal physics | Raise `windowSections`. |
 | Items take a while to join Velox after they fall | Raise `sectionFillsPerTick`. |

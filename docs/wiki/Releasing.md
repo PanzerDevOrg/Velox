@@ -1,13 +1,21 @@
 # Releasing
 
-This README is also the description on Modrinth and CurseForge (everything outside `publish:off` blocks). Add
-`docs/changelogs/<version>.md`, set `version` under `[mod]`, then tag `v<version>`. CI publishes through
-bichal-build-logic's shared publisher; every other push uploads a `release-preview` artifact with the pages and files
-as they would be published. Every release on GitHub carries each jar with its `-sources.jar` (the AGPL source for
-that file) and `SHA256SUMS.txt`.
+This page is for maintainers.
 
-`modrinth_id` and `curseforge_id` under `[publish]` in `mod.stonecutter.properties.toml` are Velox's project ids: a tag
-publishes to GitHub, Modrinth and CurseForge, with `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` as secrets (the same ones the
-other mods use). Comment an id out to skip that site; on a manual CI run on the tag (dry run off), `targets` picks the sites.
+## Steps
 
-[Back to Home](Home.md)
+1. Add the changelog for the new version, for example `docs/changelogs/0.1.1.md`.
+2. Set the new version under `[mod]` in `mod.stonecutter.properties.toml`.
+3. Commit and push. Every push runs a dry run and uploads a `release-preview` artifact. Open it and check the pages and files.
+4. Create a tag with the same version, and push it:
+
+```bash
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+CI then publishes the release to GitHub, Modrinth and CurseForge. Each GitHub release has every jar, its sources jar, and a `SHA256SUMS.txt` file. Publishing needs the `MODRINTH_TOKEN` and `CURSEFORGE_TOKEN` secrets. If a project id is commented out in `mod.stonecutter.properties.toml`, that site is skipped.
+
+## Updating the wiki
+
+The pages in `docs/wiki/` are the source for this wiki. The GitHub wiki is a separate git repository, at `https://github.com/bichal/Velox.wiki.git`. After you change a page, copy the changed files into that repository, commit them, and push.

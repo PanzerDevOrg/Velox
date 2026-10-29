@@ -1,45 +1,54 @@
 # How it works
 
-Once per tick, right before the level ticks its entities, every item in the dimension is stepped in one Celeris
-batch. Each item then applies its result at the exact point of its own tick where vanilla would have run
-`applyGravity()` / `move()` / friction; the rest of `ItemEntity.tick` runs unchanged. Velox contains no simulation
-code of its own: it only connects Minecraft to Celeris.
+Velox moves dropped items in one batch instead of one by one.
 
-| Piece | Role |
+## The short version
+
+Once per tick, before the world moves its entities, Velox works out where all the dropped items go. It uses Celeris to do this. Each item then uses that result at the same point in its tick where the normal game would have moved it.
+
+The rest of each item's tick runs as usual. Pickup delay, merging, age and despawning all work the same way.
+
+Players see the same items in the same places. Velox changes how fast the work is done, not what the items do.
+
+## What Velox handles
+
+Velox handles items that fall through the air, and items that lie on full solid blocks such as stone, dirt, grass or ice.
+
+## What the normal game still handles
+
+Velox leaves these items to the normal game code while they are in these places:
+
+- In water or lava.
+- On hoppers, slabs, stairs or carpets.
+- On slime, honey or soul sand.
+- Against fences, or in cobwebs.
+- Next to boats or minecarts.
+- Near the world border, or in chunks that are not loaded.
+
+Velox checks this every tick, so an item can move between the two groups as it moves.
+
+Only plain item entities with normal gravity are handled. Items from other mods that are a different kind of entity are left alone.
+
+## How it is tested
+
+Every supported version is checked in CI. A headless server runs Velox and vanilla side by side on the same course. The course has ice, slime, soul sand, honey, slabs, fences, cobwebs, walls placed and floors removed under the items. The check compares every item on every tick.
+
+The check also covers stacks that merge, items that despawn, chunks that unload and load again with their items, and more items than the batch can hold. A version is only listed as supported after this check passes.
+
+## Limits
+
+Velox does not remove all of the work that Minecraft does for each item. The numbers and the limits are on the [Benchmarks](Benchmarks.md) page.
+
+## For developers
+
+| Part | What it does |
 |---|---|
-| `ServerLevelMixin` | Runs the batch right before the level ticks its entities (after block and fluid ticks) |
-| `ItemEntityMixin` | Replaces the physics block of `ItemEntity.tick` with the batch result, only when it was simulated |
-| `EntityMixin` | Notices outside writes (teleports, knockback, commands) and re-reads those items next tick |
-| `LevelChunkMixin` | Keeps the terrain snapshot current on every block change |
-| `ItemPhysicsWorld` | Per-dimension Celeris batch, terrain window and bridge |
-| `BlockClassifier` | Block state to air / full cube (by friction) / complex |
-| `TerrainSampler` | Copies loaded chunk sections into the snapshot, never loads chunks |
+| `ServerLevelMixin` | Runs the batch before the world ticks its entities. |
+| `ItemEntityMixin` | Replaces the physics part of an item's tick with the batch result, when that item was simulated. |
+| `EntityMixin` | Notices changes made from outside, such as teleports, and reads those items again on the next tick. |
+| `LevelChunkMixin` | Keeps the terrain copy up to date when blocks change. |
+| `ItemPhysicsWorld` | One Celeris batch and terrain window for each world. |
+| `BlockClassifier` | Sorts a block into air, a full cube, or a complex block. |
+| `TerrainSampler` | Copies loaded terrain into the window. It never loads chunks. |
 
-Anything the engine does not model exactly (fluids, partial or special blocks, boats/shulkers/minecarts, the world
-border, unloaded chunks) makes that item run vanilla code for that tick. Only plain `ItemEntity` instances with
-normal gravity are simulated; subclasses from other mods are left alone.
-
-Every supported version is checked in CI by `./gradlew parity`: a headless server runs Velox and vanilla side by side
-on the same course (ice, slime, soul sand, honey, slabs, fences, cobwebs, walls placed and floors removed under
-items...) and compares every item, every tick, bit for bit. It also covers stacks that merge, items that despawn or are
-removed, a chunk that unloads and loads again with its items, and more items than the batch holds. Each version is
-claimed only after its check passes.
-
-- **Handled by Velox:** items falling through the air or lying on full blocks such as stone, dirt, grass or ice.
-- **Left to the normal game, while they are there:** items in water or lava, on hoppers, slabs, stairs or
-  carpets, on slime, honey or soul sand, against fences or in cobwebs, or next to boats and minecarts.
-- **How much it helps:** on a test server (Minecraft 1.21.1, 4 shared CPU cores) 50,000 items lying on the ground took
-  about 70 ms per tick with Velox and 490 ms without; 500,000 took 1.1 s against 12 s, and 100,000 falling items
-  235 ms against 1.6 s. The more crowded the items, the bigger the gain (3 times spread far apart, up to 19 times piled up).
-  Velox does not remove everything Minecraft does per item: it keeps about 25,000 to 35,000 items inside a 50 ms tick,
-  where the normal game manages roughly 5,000 to 9,000. Counts above the default `maxItemsPerLevel` (32,768) need
-  that setting raised. Methods and tables in [`docs/benchmarks.md`](./docs/benchmarks.md).
-- **Settings** are in `config/velox-common.toml`: `enabled = false` turns Velox off (after a restart), and
-  `maxItemsPerLevel` (default 32,768) is how many items per dimension it handles.
-- **Minecraft** 1.21 - 1.21.11 and 26.1 - 26.3, on NeoForge. Download the file made for your version.
-
-<p align="center">
-<a href="https://github.com/bichal/Celeris"><img src="https://img.shields.io/badge/Needs-Celeris-7c3aed?style=for-the-badge" alt="Requires Celeris"></a>
-</p>
-
-[Back to Home](Home.md)
+Velox has no physics of its own. It connects Minecraft to Celeris.

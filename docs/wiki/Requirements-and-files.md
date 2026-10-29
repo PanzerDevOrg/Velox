@@ -1,28 +1,37 @@
 # Requirements and files
 
-| Minecraft | File |
+## What you need
+
+- A NeoForge server for Minecraft 1.21 to 1.21.11, or 26.1 to 26.3.
+- [Celeris](https://github.com/bichal/Celeris) 0.3.1.1 or newer, on the same server. Velox does not work without it.
+- Java 21 for Minecraft 1.21.x. Java 25 for Minecraft 26.x.
+
+Players do not need to install Velox.
+
+## Pick your file
+
+| Minecraft version | File |
 |---|---|
-| 1.21 - 1.21.6 | `velox-<version>+1.21.1.jar` |
-| 1.21.7 - 1.21.10 | `velox-<version>+1.21.10.jar` |
-| 1.21.11 | `velox-<version>+1.21.11.jar` |
-| 26.1 - 26.3 | `velox-<version>+26.1.jar` |
+| 1.21 to 1.21.6 | `velox-0.1.0+1.21.1.jar` |
+| 1.21.7 to 1.21.10 | `velox-0.1.0+1.21.10.jar` |
+| 1.21.11 | `velox-0.1.0+1.21.11.jar` |
+| 26.1 to 26.3 | `velox-0.1.0+26.1.jar` |
 
-Every version listed is checked against vanilla, tick by tick: each file runs a dedicated server on every version
-it covers and must move every item exactly as vanilla does.
+**Example:** Your server runs Minecraft 1.21.5. That is in the first row, so use `velox-0.1.0+1.21.1.jar`.
 
-Velox works without any setup. It runs on Celeris's native physics kernel (AVX2, AVX-512 or NEON, picked for your
-CPU) when it can, and on the pure-Java kernel otherwise:
+Every file was checked against vanilla on each version in its row. A test server ran Velox and vanilla side by side, and every item had to move exactly as it does in vanilla.
 
-| Minecraft (Java) | JVM arguments for the native kernel |
-|---|---|
-| 1.21.x (Java 21) | `--enable-preview` |
-| 26.x (Java 25) | none |
+## Java flags
 
-Leave `--enable-native-access` out. It looks like the right flag for native code, but on Java 21 it makes the JVM
-refuse native calls from every module it does not list, and NeoForge loads mods as named modules that the flag
-(`ALL-UNNAMED`) cannot cover. The native kernel is then blocked and Celeris quietly uses its pure-Java kernel instead.
-Nothing breaks and every item ends up in exactly the same place; only the native kernel's speed is lost, which in
-our tests (100,000 items) made no measurable difference to the tick.
-Velox logs which kernel it is using at startup, and what to change when it is not the native one.
+Velox works without flags. It uses the native physics kernel of Celeris when it can, because that kernel is faster.
 
-[Back to Home](Home.md)
+| Minecraft | Java | Flag |
+|---|---|---|
+| 1.21.x | 21 | `--enable-preview` |
+| 26.x | 25 | None |
+
+With the current Celeris release, Java 21 needs `--enable-preview` for the native kernel. Without it, Velox still works and uses the Java kernel. In our tests with 100,000 items, this made no measurable difference to the tick time. For the details, see the note in the [Celeris JVM flags page](https://github.com/bichal/Celeris/wiki/JVM-flags).
+
+Do not add `--enable-native-access`. On Java 21 it blocks the native kernel for NeoForge mods.
+
+To see which kernel is running, search the log for `Velox: items simulated by Celeris`. The text in the brackets tells you. See [Troubleshooting](Troubleshooting.md).

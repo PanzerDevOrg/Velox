@@ -35,15 +35,14 @@ Velox runs its physics on [Celeris](https://github.com/bichal/Celeris), which mu
 
 Milliseconds per server tick. The budget for 20 ticks per second is 50 ms.
 
-- 🖥️ **20,000 falling items** (Minecraft 1.21.1, dedicated NeoForge server, CI runner, 29 Oct 2026, Celeris 3c1df34):
-  **31.4 ms instead of 508.5 ms**, 16× faster. Resting on the ground: **21.6 ms instead of 246.6 ms**, 11× faster.
-- 🧹 **8,000 resting items**: 7.5 ms instead of 53.7 ms, 7× faster. **2,000 resting items**: 1.2 ms instead of 7.6 ms, 6× faster.
-- 🔁 **Celeris 0.3.1.1 and the current main** measure within run-to-run noise of each other on these items, so the Celeris
-  update does not change Velox's speed by itself.
-- ⚙️ **The native kernel is not what makes Velox fast.** Over three runs on 30 Oct 2026, Velox with Celeris's Java kernel
-  and with the native kernel are inside each other's range (20,000 falling items: 18.9 ms with Java, 21.3 ms with native,
-  median); the kernel is 1 % (native) to 5 % (Java) of the server thread. The gain over the normal game comes from Velox
-  skipping Minecraft's per-item work.
+- 🖥️ **20,000 falling items** (Minecraft 1.21.1, dedicated NeoForge server, CI runner, median of 3 runs on 30 Oct 2026):
+  **28.0 ms instead of 493.0 ms**, 18× faster. Resting on the ground: **21.3 ms instead of 260.4 ms**, 12× faster.
+  (The normal game moves a lot between runs, so read the factor as good to about 20 %.)
+- 🧹 **8,000 resting items**: 8.7 ms instead of 54.9 ms, 6× faster. **2,000 resting items**: 1.3 ms instead of 8.5 ms, 7× faster.
+- ⚙️ **Java, JNI and FFM kernels tie.** Velox runs on any of Celeris's three physics engines and they give the same tick
+  to within noise (20,000 falling items: 28.5 ms Java, 28.0 ms JNI, 31.2 ms FFM; the whole physics step is 1–2 % of the
+  server thread with a native kernel and about 7 % with the Java one). The gain over the normal game comes from Velox
+  skipping Minecraft's per-item work, not from native code.
 - 🧱 **Crowded piles gain most.** In the local tests, 100,000 items packed on 224 × 224 blocks: 171 ms instead of
   3,315 ms, 19× faster.
 - 🏗️ **A million items**: 2.8 s per tick instead of 25.5 s. Velox does not make a million items playable, but it makes a

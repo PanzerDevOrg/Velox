@@ -2,7 +2,36 @@
 
 How long a server tick takes with lots of dropped items, with Velox and without it, up to a million items.
 
-## Latest CI run (29 October 2026)
+## Latest CI runs (30 October 2026): Java, JNI and FFM kernels
+
+**Measured:** GitHub Actions runner (4 vCPU), Minecraft 1.21.1 (NeoForge 21.1.248, Java 21) and 26.1 (Java 25),
+`bichal/BichalBuildLogic` `perf-test` run three times: runs 41010985422, 41010988292 and 41010991425; Celeris `6adf83b`,
+Velox `main`. Median of the three runs. Falling is the first 80 ticks after the throw; resting is 1,200 ticks later.
+The test runs Velox on each of Celeris's three physics engines (`-Dceleris.physics.engine=java|jni|ffm`; the log line
+`Velox: items simulated by Celeris (...)` of every run confirms the engine). FFM needs `--enable-preview` on Java 21.
+
+Falling / resting, ms per tick:
+
+| Minecraft | Items | Normal game | Velox, Java kernel | Velox, FFM kernel | Velox, JNI kernel |
+|---|---|---|---|---|---|
+| 1.21.1 | 2,000 | 15.30 / 8.50 | 5.42 / 1.40 | 3.32 / 1.50 | 2.96 / 1.30 |
+| 1.21.1 | 8,000 | 104.34 / 54.85 | 11.57 / 8.76 | 11.70 / 8.85 | 10.62 / 8.66 |
+| 1.21.1 | 20,000 | 492.99 / 260.40 | 28.53 / 21.54 | 31.15 / 22.94 | 28.00 / 21.29 |
+| 26.1 | 2,000 | 14.70 / 9.01 | 3.47 / 2.23 | 2.65 / 2.32 | 2.45 / 2.15 |
+| 26.1 | 8,000 | 96.73 / 57.71 | 17.72 / 9.71 | 15.06 / 9.64 | 15.86 / 9.31 |
+| 26.1 | 20,000 | 488.27 / 260.24 | 39.87 / 29.65 | 36.45 / 30.74 | 36.52 / 27.39 |
+
+![Tick time with items resting on the ground](./media/benchmarks/resting.png)
+
+Velox is 5× to 18× faster than the normal game; the normal game moves a lot between runs (20,000 falling items on
+1.21.1: 469–574 ms in these runs, 223–283 ms in three runs earlier the same day), so the factor is good to about 20 %.
+**The three engines tie:** at 8,000 and 20,000 items they lie inside each other's range, and at 2,000 items falling
+the Java kernel is slower (5.4 ms against 3.0–3.3 ms on 1.21.1; Java compiles the kernel while the test runs). In the
+JFR profile of 1.21.1 the whole Celeris physics step is 1.0–1.5 % of the server thread with JNI, 1.6–2.0 % with FFM
+and 7.0–7.9 % with the Java kernel (`collideBody` alone 5.6–6.1 %), so the most a native kernel can save is inside the
+noise. Three runs earlier the same day (Java and JNI only, runs 41008058250, 41008080832, 41008083510) agree.
+
+## Earlier CI run (29 October 2026)
 
 **Measured:** GitHub Actions runner (4 vCPU), Minecraft 1.21.1, NeoForge 21.1.248, Java 21, `bichal/BichalBuildLogic`
 `perf-test`, run 40949675630 (Celeris 0.3.1.1, `f6a6676`) and run 40949679932 (Celeris 3c1df34, current `main`), Velox
@@ -21,28 +50,6 @@ Celeris 0.3.1.1 and 3c1df34 with the native kernel (run 13 against run 14): 2,00
 1.26 / 1.20 ms, 8,000 falling 10.82 / 9.02 ms, 8,000 resting 5.87 / 7.46 ms, 20,000 falling 26.63 / 31.38 ms, 20,000
 resting 18.96 / 21.62 ms. The normal game also moved by up to 20 % between the two runs (425.95 / 508.50 ms falling at
 20,000). These differences are within the run-to-run noise, so the Celeris update is not a measured speed-up for Velox.
-
-### Run again on 30 October 2026 (three runs)
-
-**Measured:** the same `perf-test` three times in a row, Minecraft 1.21.1, Celeris `6adf83b` (the kernel
-changes after 3c1df34), Velox `main`; `bichal/BichalBuildLogic` runs 41008058250, 41008080832 and 41008083510. Median of
-the three runs, lowest and highest in brackets.
-
-| Items | Phase | Normal game | Velox, Java kernel | Velox, native kernel |
-|---|---|---|---|---|
-| 2,000 | Falling | 7.99 ms (6.69–8.31) | 1.98 ms (1.38–3.08) | 1.61 ms (1.38–1.75) |
-| 2,000 | Resting | 6.13 ms (4.84–6.27) | 0.94 ms (0.87–1.08) | 0.87 ms (0.66–1.04) |
-| 8,000 | Falling | 59.17 ms (49.05–63.82) | 7.66 ms (4.80–8.95) | 7.13 ms (6.44–8.29) |
-| 8,000 | Resting | 41.47 ms (31.19–44.14) | 4.41 ms (3.97–5.09) | 5.05 ms (4.57–6.17) |
-| 20,000 | Falling | 278.02 ms (222.88–282.78) | 18.93 ms (18.64–25.54) | 21.28 ms (21.06–27.37) |
-| 20,000 | Resting | 199.27 ms (145.42–207.53) | 15.22 ms (14.84–18.90) | 15.48 ms (14.65–19.78) |
-
-Velox is 5× to 15× faster than the normal game, as on 29 October; the normal game moves a lot between runs (145 to
-247 ms for 20,000 resting items over the four runs), so the factor is good to about 20 %. **The native kernel is not
-what makes it fast:** the two kernels lie inside each other's range in every row, and with 20,000 falling items the
-native kernel was 7–13 % slower than the Java kernel in all three runs. In the JFR profile of these runs the native
-kernel (`EntityBodyBridge.tick`) is 0.8–1.4 % of the server thread and the Java kernel (`JavaPhysicsKernel.collideBody`)
-4.8–5.0 %.
 
 Death ticks (mobs killed in one tick, with and without their drops) are **not measured yet**: the first attempt timed
 ticks that did not contain the kills (0.1–0.25 ms in every case), so its numbers are not reported.

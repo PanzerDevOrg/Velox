@@ -40,6 +40,10 @@ Milliseconds per server tick. The budget for 20 ticks per second is 50 ms.
 - 🧹 **8,000 resting items**: 7.5 ms instead of 53.7 ms, 7× faster. **2,000 resting items**: 1.2 ms instead of 7.6 ms, 6× faster.
 - 🔁 **Celeris 0.3.1.1 and the current main** measure within run-to-run noise of each other on these items, so the Celeris
   update does not change Velox's speed by itself.
+- ⚙️ **The native kernel is not what makes Velox fast.** Over three runs on 30 Oct 2026, Velox with Celeris's Java kernel
+  and with the native kernel are inside each other's range (20,000 falling items: 18.9 ms with Java, 21.3 ms with native,
+  median); the kernel is 1 % (native) to 5 % (Java) of the server thread. The gain over the normal game comes from Velox
+  skipping Minecraft's per-item work.
 - 🧱 **Crowded piles gain most.** In the local tests, 100,000 items packed on 224 × 224 blocks: 171 ms instead of
   3,315 ms, 19× faster.
 - 🏗️ **A million items**: 2.8 s per tick instead of 25.5 s. Velox does not make a million items playable, but it makes a

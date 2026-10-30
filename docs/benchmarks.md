@@ -22,6 +22,28 @@ Celeris 0.3.1.1 and 3c1df34 with the native kernel (run 13 against run 14): 2,00
 resting 18.96 / 21.62 ms. The normal game also moved by up to 20 % between the two runs (425.95 / 508.50 ms falling at
 20,000). These differences are within the run-to-run noise, so the Celeris update is not a measured speed-up for Velox.
 
+### Run again on 30 October 2026 (three runs)
+
+**Measured:** the same `perf-test` three times in a row, Minecraft 1.21.1, Celeris `6adf83b` (the kernel
+changes after 3c1df34), Velox `main`; `bichal/BichalBuildLogic` runs 41008058250, 41008080832 and 41008083510. Median of
+the three runs, lowest and highest in brackets.
+
+| Items | Phase | Normal game | Velox, Java kernel | Velox, native kernel |
+|---|---|---|---|---|
+| 2,000 | Falling | 7.99 ms (6.69–8.31) | 1.98 ms (1.38–3.08) | 1.61 ms (1.38–1.75) |
+| 2,000 | Resting | 6.13 ms (4.84–6.27) | 0.94 ms (0.87–1.08) | 0.87 ms (0.66–1.04) |
+| 8,000 | Falling | 59.17 ms (49.05–63.82) | 7.66 ms (4.80–8.95) | 7.13 ms (6.44–8.29) |
+| 8,000 | Resting | 41.47 ms (31.19–44.14) | 4.41 ms (3.97–5.09) | 5.05 ms (4.57–6.17) |
+| 20,000 | Falling | 278.02 ms (222.88–282.78) | 18.93 ms (18.64–25.54) | 21.28 ms (21.06–27.37) |
+| 20,000 | Resting | 199.27 ms (145.42–207.53) | 15.22 ms (14.84–18.90) | 15.48 ms (14.65–19.78) |
+
+Velox is 5× to 15× faster than the normal game, as on 29 October; the normal game moves a lot between runs (145 to
+247 ms for 20,000 resting items over the four runs), so the factor is good to about 20 %. **The native kernel is not
+what makes it fast:** the two kernels lie inside each other's range in every row, and with 20,000 falling items the
+native kernel was 7–13 % slower than the Java kernel in all three runs. In the JFR profile of these runs the native
+kernel (`EntityBodyBridge.tick`) is 0.8–1.4 % of the server thread and the Java kernel (`JavaPhysicsKernel.collideBody`)
+4.8–5.0 %.
+
 Death ticks (mobs killed in one tick, with and without their drops) are **not measured yet**: the first attempt timed
 ticks that did not contain the kills (0.1–0.25 ms in every case), so its numbers are not reported.
 

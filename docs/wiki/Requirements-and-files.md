@@ -23,15 +23,15 @@ Every file was checked against vanilla on each version in its row. A test server
 
 ## Java flags
 
-Velox works without flags. It uses the native physics kernel of Celeris when it can, because that kernel is faster.
+Velox works without flags. It asks Celeris for the native physics kernel, through JNI, which needs no flag. If the native library cannot load, Velox uses the Java kernel and still works. The native kernel steps items about twice as fast, but the server tick is about the same either way: in our tests with 20,000 items the Java, JNI and FFM kernels tie (see [Benchmarks](Benchmarks)). To force the Java kernel, add `-Dceleris.physics.engine=java`.
 
-| Minecraft | Java | Flag |
+Only the FFM binding needs a flag, and Celeris tries it only if JNI cannot load:
+
+| Minecraft | Java | Flag for FFM |
 |---|---|---|
 | 1.21.x | 21 | `--enable-preview` |
 | 26.x | 25 | None |
 
-With the current Celeris release, Java 21 needs `--enable-preview` for the native kernel. Without it, Velox still works and uses the Java kernel. In our tests with 100,000 items, this made no measurable difference to the tick time. For the details, see the note in the [Celeris JVM flags page](https://github.com/bichal/Celeris/wiki/JVM-flags).
-
-Do not add `--enable-native-access`. On Java 21 it blocks the native kernel for NeoForge mods.
+Do not add `--enable-native-access`. On Java 21 it blocks FFM calls from NeoForge mods.
 
 To see which kernel is running, search the log for `Velox: items simulated by Celeris`. The text in the brackets tells you. See [Troubleshooting](Troubleshooting).

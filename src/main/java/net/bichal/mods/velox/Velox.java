@@ -1,5 +1,6 @@
 package net.bichal.mods.velox;
 
+import net.bichal.mods.celeris.physics.CelerisPhysics;
 import net.bichal.mods.velox.config.VeloxConfig;
 import net.bichal.mods.velox.parity.ParityHarness;
 import net.bichal.mods.velox.physics.VeloxEvents;
@@ -25,9 +26,25 @@ public final class Velox {
 
     public Velox(IEventBus modBus, ModContainer container) {
         container.registerConfig(commonConfigType(), VeloxConfig.SPEC);
+        requestNativeKernel();
         VeloxEvents.register();
         if (ParityHarness.ENABLED) {
             ParityHarness.register();
+        }
+    }
+
+    /**
+     * Celeris runs its Java kernel unless a mod asks for the native one, and Velox does: it steps
+     * thousands of items in batches, which is where the native kernel is faster. This has to run
+     * before Celeris chooses its engine (the first batch), so it is the first thing the mod does.
+     * The player keeps the last word with {@code -Dceleris.physics.engine=java}. A Celeris from
+     * before the opt-in already prefers the native kernel and has no such method.
+     */
+    private static void requestNativeKernel() {
+        try {
+            CelerisPhysics.allowNative(MOD_ID);
+        } catch (LinkageError olderCeleris) {
+            LOGGER.debug("Celeris has no allowNative: its engine choice is not opt-in");
         }
     }
 
